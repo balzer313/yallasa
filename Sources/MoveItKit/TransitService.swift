@@ -125,8 +125,12 @@ public final class TransitService: ObservableObject {
         defer { installProgress = nil }
 
         do {
-            let installed = try await feedManager.install(source, region: region) { [weak self] progress in
-                Task { @MainActor in self?.installProgress = progress }
+            // The weak capture belongs on the inner `Task`, not the outer
+            // closure. Capturing it outside leaves the nested, concurrently
+            // executing closure reading a captured mutable optional, which the
+            // concurrency checker rejects outright.
+            let installed = try await feedManager.install(source, region: region) { progress in
+                Task { @MainActor [weak self] in self?.installProgress = progress }
             }
             installedFeeds = await feedManager.installedFeeds
             try await activate(feedID: installed.id)
@@ -197,8 +201,8 @@ public final class TransitService: ObservableObject {
         guard let feedManager, let activeFeed else { return false }
         let changed = try await feedManager.refreshIfNeeded(
             activeFeed.id, maximumAge: maximumAge
-        ) { [weak self] progress in
-            Task { @MainActor in self?.installProgress = progress }
+        ) { progress in
+            Task { @MainActor [weak self] in self?.installProgress = progress }
         }
         installProgress = nil
         if changed {
