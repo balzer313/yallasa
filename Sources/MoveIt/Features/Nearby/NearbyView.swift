@@ -92,17 +92,14 @@ struct NearbyView: View {
                             systemImage: "location.circle",
                             title: String(localized: "Show stops around you"),
                             message: String(localized: "Move It needs your location to find nearby stops. It stays on your phone."),
-                            actionTitle: String(localized: "Allow location")
-                        ) {
-                            viewModel.requestLocationPermission()
-                        }
+                            primaryTitle: String(localized: "Allow location"),
+                            primaryAction: { viewModel.requestLocationPermission() }
+                        )
                     } else if viewModel.usingFallbackLocation {
                         NoticeCard(
                             systemImage: "mappin.and.ellipse",
                             title: String(localized: "Showing the city centre"),
-                            message: String(localized: "Without your location, Move It centres the board on the middle of the network."),
-                            actionTitle: nil,
-                            action: nil
+                            message: String(localized: "Without your location, Move It centres the board on the middle of the network.")
                         )
                     }
 
@@ -121,10 +118,9 @@ struct NearbyView: View {
                             systemImage: "line.3.horizontal.decrease.circle",
                             title: String(localized: "Nothing matches that filter"),
                             message: String(localized: "No departures in the next few hours use the modes you picked."),
-                            actionTitle: String(localized: "Clear filter")
-                        ) {
-                            viewModel.clearModeFilter()
-                        }
+                            primaryTitle: String(localized: "Clear filter"),
+                            primaryAction: { viewModel.clearModeFilter() }
+                        )
                     } else {
                         ForEach(groups) { group in
                             stopCard(group, now: now)

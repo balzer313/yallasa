@@ -170,8 +170,11 @@ final class NearbyViewModel: ObservableObject {
     ///   rider is reading.
     func load(silently: Bool = false) async {
         loadTask?.cancel()
-        let task = Task { @MainActor [weak self] in
-            await self?.performLoad(silently: silently)
+        // Unwrapped inside rather than `await self?.…`, whose result is `()?` and
+        // therefore a `Task<()?, Never>` that will not fit the stored property.
+        let task: Task<Void, Never> = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performLoad(silently: silently)
         }
         loadTask = task
         await task.value
