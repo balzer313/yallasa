@@ -109,7 +109,7 @@ struct FeedSourceList: View {
 
             ForEach(sources) { source in
                 FeedSourceRow(source: source) { region in
-                    await install(source, region: region)
+                    await install(source, region)
                 }
             }
 

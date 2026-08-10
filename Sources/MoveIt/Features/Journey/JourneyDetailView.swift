@@ -264,10 +264,11 @@ struct JourneyDetailView: View {
                 parts.append(String(localized: "\(name) to \(leg.toName)"))
             }
         }
-        return String(
-            localized: "\(clock(item.departureSeconds)) → \(clock(item.arrivalSeconds)): "
-                + parts.joined(separator: ", ")
-        )
+        // Assembled rather than localised as one unit: the individual steps are
+        // already localised above, and concatenating them produces a `String`,
+        // which is not a `String.LocalizationValue`.
+        let steps = parts.joined(separator: ", ")
+        return "\(clock(item.departureSeconds)) → \(clock(item.arrivalSeconds)): \(steps)"
     }
 
     /// The journey's own day frame, so a trip planned for tomorrow counts down
