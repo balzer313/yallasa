@@ -1,0 +1,60 @@
+# Builds and tests on a macOS runner.
+#
+# This exists because the project was authored on Windows, where the iOS SDK
+# does not exist and nothing here can be compiled. GitHub's macOS runners are
+# the cheapest way to close that gap: push, and within a few minutes you get a
+# real compiler's opinion on 24,000 lines that have never seen one.
+#
+# The engine job is the one that matters first. It builds and tests MoveItKit
+# with no Xcode project, no signing and no simulator, so it is fast and it fails
+# for real reasons.
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  engine:
+    name: Engine (build + test)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build MoveItKit
+        run: swift build -v
+
+      - name: Test MoveItKit
+        run: swift test -v
+
+  app:
+    name: iOS app (simulator build)
+    runs-on: macos-14
+    # Only worth running once the engine compiles; a broken engine fails here
+    # too, with a much noisier log.
+    needs: engine
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      - name: Build for the simulator
+        # A simulator build needs no signing identity and no Apple Developer
+        # account, which is what makes this runnable on a bare CI machine.
+        run: |
+          xcodebuild build \
+            -project MoveIt.xcodeproj \
+            -scheme MoveIt \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty || exit ${PIPESTATUS[0]}

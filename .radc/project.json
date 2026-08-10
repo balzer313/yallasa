@@ -1,0 +1,29 @@
+{
+  "projectId": "proj_2f0c27aac98128fcdd6d3d86",
+  "name": "Move it",
+  "path": "D:\\Projects\\Move it",
+  "allowClaude": true,
+  "createdAt": "2026-08-09T08:58:38.277Z",
+  "sessionCounts": {
+    "total": 1,
+    "running": 1,
+    "byType": {
+      "claude": 1
+    }
+  },
+  "recentActivity": [
+    "2026-08-10T15:24:45.824Z — claude \"Claude - Move it\" is running"
+  ],
+  "sessions": [
+    {
+      "id": "sess_a7d94abf49f5930add36fcbc",
+      "name": "Claude - Move it",
+      "type": "claude",
+      "status": "running",
+      "createdAt": "2026-08-09T08:58:44.314Z",
+      "updatedAt": "2026-08-10T15:24:45.824Z",
+      "lastAttachedAt": "2026-08-10T15:24:02.591Z"
+    }
+  ],
+  "generatedAt": "2026-08-10T15:24:46.131Z"
+}
