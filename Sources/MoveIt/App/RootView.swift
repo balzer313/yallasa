@@ -104,9 +104,9 @@ struct RootView: View {
         case .stop(let stop):
             StopDetailView(stop: stop)
         case .pattern(let pattern, let position):
-            PatternDetailView(route: nil, pattern: pattern, position: position)
+            PatternDetailView(pattern: pattern, position: position)
         case .route(let route):
-            PatternDetailView(route: route, pattern: nil, position: nil)
+            PatternDetailView(route: route)
         case .journey(let item):
             JourneyDetailView(item: item)
         case .feedPicker:
