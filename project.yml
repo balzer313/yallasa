@@ -45,6 +45,12 @@ targets:
           - "**/.DS_Store"
       - path: Resources
         buildPhase: resources
+        excludes:
+          # Info.plist is consumed via INFOPLIST_FILE, which processes it into
+          # the bundle itself. Leaving it in the resources phase as well makes
+          # two build commands write the same path, and Xcode refuses with
+          # "Multiple commands produce .../Info.plist".
+          - "Info.plist"
     dependencies:
       - package: MoveItKit
         product: MoveItKit
