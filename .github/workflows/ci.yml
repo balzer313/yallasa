@@ -38,12 +38,19 @@ jobs:
 
   app:
     name: iOS app (simulator build)
-    runs-on: macos-14
+    # Newer than the engine job on purpose: Homebrew ships a current XcodeGen,
+    # which writes a project format that Xcode 15.4 on macos-14 cannot open
+    # ("Unable to read project"). The runner has to be at least as new as the
+    # generator.
+    runs-on: macos-15
     # Only worth running once the engine compiles; a broken engine fails here
     # too, with a much noisier log.
     needs: engine
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: xcodebuild -version
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -54,10 +61,15 @@ jobs:
       - name: Build for the simulator
         # A simulator build needs no signing identity and no Apple Developer
         # account, which is what makes this runnable on a bare CI machine.
+        #
+        # Deliberately no `| xcpretty`. Piping xcodebuild into a formatter makes
+        # the step's exit status the *formatter's*, and the earlier
+        # `|| exit ${PIPESTATUS[0]}` guard did not survive the `||` boundary —
+        # the job reported success over a build that had failed outright. A CI
+        # run that lies is worse than no CI run.
         run: |
           xcodebuild build \
             -project MoveIt.xcodeproj \
             -scheme MoveIt \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
-            | xcpretty || exit ${PIPESTATUS[0]}
+            CODE_SIGNING_ALLOWED=NO
