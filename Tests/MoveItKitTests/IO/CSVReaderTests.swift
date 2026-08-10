@@ -162,18 +162,21 @@ final class CSVReaderTests: XCTestCase {
         }
     }
 
-    func testEmptyFileThrows() {
+    // `withUnsafeBytes` is `rethrows`, and the throwing autoclosure inside makes
+    // the trailing closure infer as throwing — so the call needs `try` and the
+    // test needs to be `throws`.
+    func testEmptyFileThrows() throws {
         let bytes: [UInt8] = []
-        bytes.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Void in
+        try bytes.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Void in
             XCTAssertThrowsError(try CSVReader(bytes: raw)) { error in
                 XCTAssertEqual(error as? CSVError, .emptyFile)
             }
         }
     }
 
-    func testHeaderOfOnlyBlankNamesThrows() {
+    func testHeaderOfOnlyBlankNamesThrows() throws {
         let bytes = Array(",,\n1,2,3\n".utf8)
-        bytes.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Void in
+        try bytes.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Void in
             XCTAssertThrowsError(try CSVReader(bytes: raw)) { error in
                 XCTAssertEqual(error as? CSVError, .malformedHeader)
             }

@@ -125,6 +125,7 @@ struct ZipBuilder {
 private extension Data {
     mutating func appendLE<T: FixedWidthInteger>(_ value: T) {
         var little = value.littleEndian
-        withUnsafeBytes(of: &little) { append(contentsOf: $0) }
+        // Qualified: unqualified, this resolves to `Data.withUnsafeBytes`.
+        Swift.withUnsafeBytes(of: &little) { append(contentsOf: $0) }
     }
 }
