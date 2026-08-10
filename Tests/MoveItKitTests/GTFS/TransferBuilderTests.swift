@@ -68,7 +68,11 @@ final class TransferBuilderTests: XCTestCase {
 
     func testStopsBeyondTheRadiusAreNotConnectedDirectly() {
         var options = GraphMetadata.BuildOptions()
-        options.maxTransferSeconds = 300 // Too tight for the two-hop path below.
+        // Wide enough for one 400 m hop (406 s at 1.33 m/s with the 1.35 detour
+        // factor), too tight for two of them chained by the closure (812 s).
+        // The cap applies to every footpath, generated or closed — 300 s would
+        // also have thrown away the direct edge this test asserts.
+        options.maxTransferSeconds = 500
         let result = build(
             [point(metersNorth: 0), point(metersNorth: 400), point(metersNorth: 800)],
             options: options

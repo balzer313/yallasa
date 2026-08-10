@@ -272,16 +272,54 @@ final class RaptorFixtureTests: XCTestCase {
     // MARK: - Realtime
 
     func testDelayPushingAConnectionOutOfReachSelectsTheLaterTrip() throws {
+        // Only the 08:00 Route 1 trip runs, so the delayed vehicle is the only
+        // way out of Ashfield. With all three trips present the router correctly
+        // ignores a delayed 08:00 entirely — the 08:10 then leaves earlier *and*
+        // arrives earlier, which makes the delayed one worse on every axis. That
+        // is right, but it hides the behaviour under test.
+        var fixture = GraphFixture.twoLineNetwork()
+        fixture.trips = fixture.trips.filter { $0.pattern != 0 || $0.identifier == "r1_t0" }
+        let graph = try fixture.build()
+        let planner = JourneyPlanner(graph: graph)
+        let onlyRoute1Trip = graph.globalTripIndex(0, offset: 0)
+
+        let request = PlanRequest(
+            origin: .stop(ashfield),
+            destination: .stop(eastgate),
+            anchor: departAfter(28_800, on: fixture.defaultDate),
+            options: options()
+        )
+
+        // On schedule: Bridgeway at 08:06, walk two minutes, catch the 08:20.
+        let onSchedule = try planner.plan(request)
+        XCTAssertEqual(try XCTUnwrap(onSchedule.journeys.first).arrival, 30_480)
+
+        // Fifteen minutes late: Bridgeway at 08:21, and after the walk the 08:20
+        // from Bridgeway East is gone, so the 08:30 has to do.
+        let realtime = StubRealtimeSource()
+        realtime.setDelay(900, trip: onlyRoute1Trip, positions: 3)
+        let delayedResult = try planner.plan(request, realtime: realtime)
+
+        let delayed = try XCTUnwrap(
+            delayedResult.journeys.first { !$0.isWalkOnly },
+            "the delayed trip is the only service, so it must still be offered"
+        )
+        XCTAssertEqual(delayed.arrival, 31_080, "08:30 from Bridgeway East, arriving 08:38")
+        XCTAssertEqual(delayed.rides.first?.trip, onlyRoute1Trip)
+        XCTAssertEqual(delayed.rides.first?.departureDelay, 900)
+    }
+
+    func testADelayedTripIsAbandonedWhenALaterOneBeatsItOutright() throws {
         let fixture = GraphFixture.twoLineNetwork()
         let graph = try fixture.build()
         let planner = JourneyPlanner(graph: graph)
 
-        // Delay the 08:00 Route 1 trip by fifteen minutes. It now reaches
-        // Bridgeway at 08:21, so after the two-minute walk the 08:20 from
-        // Bridgeway East is gone and the 08:30 has to be used instead.
+        // Delaying the 08:00 by fifteen minutes makes the 08:10 leave earlier and
+        // arrive earlier. There is no rider preference under which the delayed
+        // bus is the right answer, so the router must not offer it.
         let realtime = StubRealtimeSource()
-        let firstRoute1Trip = graph.globalTripIndex(0, offset: 0)
-        realtime.setDelay(900, trip: firstRoute1Trip, positions: 3)
+        let delayedTrip = graph.globalTripIndex(0, offset: 0)
+        realtime.setDelay(900, trip: delayedTrip, positions: 3)
 
         let result = try planner.plan(
             PlanRequest(
@@ -293,12 +331,12 @@ final class RaptorFixtureTests: XCTestCase {
             realtime: realtime
         )
 
-        let delayed = try XCTUnwrap(
-            result.journeys.first { $0.rides.first?.trip == firstRoute1Trip },
-            "the delayed trip should still be usable, just with a later connection"
+        XCTAssertFalse(result.journeys.isEmpty)
+        XCTAssertFalse(
+            result.journeys.contains { $0.rides.first?.trip == delayedTrip },
+            "a strictly worse option should not be shown"
         )
-        XCTAssertEqual(delayed.arrival, 31_080, "08:30 from Bridgeway East, arriving 08:38")
-        XCTAssertEqual(delayed.rides.first?.departureDelay, 900)
+        XCTAssertEqual(try XCTUnwrap(result.journeys.first).arrival, 30_480)
     }
 
     func testCancelledTripIsNotBoarded() throws {

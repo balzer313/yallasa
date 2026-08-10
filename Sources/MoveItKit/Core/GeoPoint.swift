@@ -91,12 +91,63 @@ public struct GeoBounds: Hashable, Sendable, Codable {
         self.maxLongitude = maxLongitude
     }
 
+    /// The identity for `extend(to:)`: inverted infinities, so the first point
+    /// added replaces both edges.
+    ///
+    /// The infinities are why this type encodes itself by hand — see below.
     public static let empty = GeoBounds(
         minLatitude: .infinity, minLongitude: .infinity,
         maxLatitude: -.infinity, maxLongitude: -.infinity
     )
 
     public var isEmpty: Bool { minLatitude > maxLatitude || minLongitude > maxLongitude }
+
+    // MARK: - Codable
+    //
+    // Hand-written because `JSONEncoder` refuses to encode a non-finite `Double`
+    // and throws rather than writing something wrong. That turns the empty
+    // sentinel into a landmine: a graph compiled from a region clip that matched
+    // no stops has empty bounds, and writing its metadata — or the feed manifest
+    // that embeds it — would fail with "Unable to encode Double.inf directly in
+    // JSON", taking down an install that was otherwise fine.
+    //
+    // So emptiness travels as a flag and the coordinates are simply absent.
+
+    private enum CodingKeys: String, CodingKey {
+        case minLatitude, minLongitude, maxLatitude, maxLongitude, isEmpty
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if try container.decodeIfPresent(Bool.self, forKey: .isEmpty) == true {
+            self = .empty
+            return
+        }
+        self.minLatitude = try container.decode(Double.self, forKey: .minLatitude)
+        self.minLongitude = try container.decode(Double.self, forKey: .minLongitude)
+        self.maxLatitude = try container.decode(Double.self, forKey: .maxLatitude)
+        self.maxLongitude = try container.decode(Double.self, forKey: .maxLongitude)
+
+        // A file written by some other tool could still carry a non-finite value.
+        // Treat that as empty rather than propagating an infinity into the grid
+        // arithmetic, where it would silently produce a zero-cell index.
+        if !minLatitude.isFinite || !minLongitude.isFinite
+            || !maxLatitude.isFinite || !maxLongitude.isFinite {
+            self = .empty
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        guard !isEmpty else {
+            try container.encode(true, forKey: .isEmpty)
+            return
+        }
+        try container.encode(minLatitude, forKey: .minLatitude)
+        try container.encode(minLongitude, forKey: .minLongitude)
+        try container.encode(maxLatitude, forKey: .maxLatitude)
+        try container.encode(maxLongitude, forKey: .maxLongitude)
+    }
 
     public var center: GeoPoint {
         GeoPoint(latitude: (minLatitude + maxLatitude) / 2, longitude: (minLongitude + maxLongitude) / 2)
