@@ -27,11 +27,14 @@ jobs:
       - name: Show toolchain
         run: swift --version
 
+      # Not `-v`. Verbose mode prints the full swift-frontend invocation for
+      # every file, which buries the handful of lines that actually say
+      # "error:" under megabytes of flags.
       - name: Build MoveItKit
-        run: swift build -v
+        run: swift build
 
       - name: Test MoveItKit
-        run: swift test -v
+        run: swift test
 
   app:
     name: iOS app (simulator build)

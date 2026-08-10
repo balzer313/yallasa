@@ -273,7 +273,7 @@ public final class TransitService: ObservableObject {
 
     public func plan(_ request: PlanRequest) async throws -> PlanResult {
         guard let engine else { throw TransitServiceError.noActiveFeed }
-        return try await run { engine.planner.plan(request, realtime: engine.realtime) }
+        return try await run { try engine.planner.plan(request, realtime: engine.realtime) }
     }
 
     public func departures(

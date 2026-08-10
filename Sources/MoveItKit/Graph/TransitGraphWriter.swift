@@ -130,7 +130,11 @@ public final class TransitGraphWriter {
 extension Data {
     mutating func appendLittleEndian<T: FixedWidthInteger>(_ value: T) {
         var littleEndian = value.littleEndian
-        withUnsafeBytes(of: &littleEndian) { append(contentsOf: $0) }
+        // `Swift.` qualified because an unqualified `withUnsafeBytes` inside a
+        // `Data` extension resolves to `Data.withUnsafeBytes(_:)` — the instance
+        // method on the buffer being written to, not the global that views a
+        // scalar's bytes.
+        Swift.withUnsafeBytes(of: &littleEndian) { append(contentsOf: $0) }
     }
 }
 

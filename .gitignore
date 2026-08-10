@@ -15,9 +15,15 @@ Package.resolved
 
 # Compiled feeds and cached archives — these are large, machine-generated, and
 # always reproducible from the network.
+#
+# Note the absence of a bare `Feeds/` rule. It was here once, aimed at the app's
+# runtime feed store, and a bare directory name matches at *any* depth: it
+# silently excluded Sources/MoveItKit/Feeds and Tests/MoveItKitTests/Feeds from
+# the first push, and the build failed with "cannot find type 'FeedManager'".
+# The runtime store lives in Application Support and was never in the repository
+# to begin with, so the rule protected nothing.
 *.mvtg
 *.mvtg.tmp
-Feeds/
 
 # macOS
 .DS_Store

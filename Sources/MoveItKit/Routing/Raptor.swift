@@ -333,7 +333,7 @@ struct ForwardRaptor {
 
                 var departure = scheduledInFrame
                 if query.appliesRealtime {
-                    if query.realtime.isCancelled(trip) { continue }
+                    if query.realtime.isCancelled(trip: trip) { continue }
                     if let adjustment = query.realtime.adjustment(trip: trip, position: position) {
                         if adjustment.blocksBoarding { continue }
                         departure = scheduledInFrame + adjustment.departureDelay

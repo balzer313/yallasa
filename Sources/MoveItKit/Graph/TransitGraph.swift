@@ -269,6 +269,15 @@ public final class TransitGraph: @unchecked Sendable {
     }
 
     // MARK: - Sizes
+    //
+    // None of the accessors below are `@inlinable`, deliberately. They read the
+    // private column storage, which `@inlinable` forbids — and marking the
+    // columns `@usableFromInline` to work around that would widen the type's
+    // real API surface for no gain. The only caller that needs these to be fast
+    // is the router, which lives in this module, and release builds use
+    // whole-module optimisation, so the optimiser already inlines them. The
+    // attribute would only have helped a *cross-module* caller, and the one
+    // cross-module caller is the UI, which is not in a hot loop.
 
     public var stopCount: Int { stopLatitudeE6.count }
     public var patternCount: Int { patternRouteColumn.count }
@@ -312,7 +321,6 @@ public final class TransitGraph: @unchecked Sendable {
 
     // MARK: - Stops
 
-    @inlinable
     public func isValid(stop: StopIndex) -> Bool { stop >= 0 && Int(stop) < stopCount }
 
     public func stopCoordinate(_ stop: StopIndex) -> GeoPoint {
@@ -346,14 +354,12 @@ public final class TransitGraph: @unchecked Sendable {
     }
 
     /// Indices into `stopPatternReferences` / `stopPatternPositions`.
-    @inlinable
     public func patternSlots(atStop stop: StopIndex) -> Range<Int> {
         let start = Int(stopPatternStart[Int(stop)])
         return start ..< (start + Int(stopPatternCountColumn[Int(stop)]))
     }
 
     /// Indices into the `transfer*` columns.
-    @inlinable
     public func transferSlots(fromStop stop: StopIndex) -> Range<Int> {
         let start = Int(stopTransferStart[Int(stop)])
         return start ..< (start + Int(stopTransferCountColumn[Int(stop)]))
@@ -376,17 +382,13 @@ public final class TransitGraph: @unchecked Sendable {
 
     public func patternRoute(_ pattern: PatternIndex) -> RouteIndex { patternRouteColumn[Int(pattern)] }
 
-    @inlinable
     public func patternStopCount(_ pattern: PatternIndex) -> Int { Int(patternStopCountColumn[Int(pattern)]) }
 
-    @inlinable
     public func patternTripCount(_ pattern: PatternIndex) -> Int { Int(patternTripCountColumn[Int(pattern)]) }
 
     /// Index into `patternStopReferences` of the pattern's first stop.
-    @inlinable
     public func patternStopBase(_ pattern: PatternIndex) -> Int { Int(patternStopStart[Int(pattern)]) }
 
-    @inlinable
     public func patternStop(_ pattern: PatternIndex, at position: Int) -> StopIndex {
         patternStopReferences[patternStopBase(pattern) + position]
     }
@@ -401,14 +403,12 @@ public final class TransitGraph: @unchecked Sendable {
 
     /// Whether the router may board a vehicle of this pattern at `position`.
     /// False at the final stop and wherever the feed says drop-off only.
-    @inlinable
     public func patternAllowsBoarding(_ pattern: PatternIndex, at position: Int) -> Bool {
         position < patternStopCount(pattern) - 1
             && patternPickupColumn[patternStopBase(pattern) + position] == StopServiceAvailability.regular.rawValue
     }
 
     /// Whether the router may alight at `position`. False at the first stop.
-    @inlinable
     public func patternAllowsAlighting(_ pattern: PatternIndex, at position: Int) -> Bool {
         position > 0
             && patternDropOffColumn[patternStopBase(pattern) + position] == StopServiceAvailability.regular.rawValue
@@ -434,19 +434,16 @@ public final class TransitGraph: @unchecked Sendable {
 
     // MARK: - Trips
 
-    @inlinable
     public func globalTripIndex(_ pattern: PatternIndex, offset: Int) -> TripIndex {
         TripIndex(Int(patternTripStart[Int(pattern)]) + offset)
     }
 
     /// The global trip range of a pattern, in departure order.
-    @inlinable
     public func tripRange(ofPattern pattern: PatternIndex) -> Range<Int> {
         let start = Int(patternTripStart[Int(pattern)])
         return start ..< (start + patternTripCount(pattern))
     }
 
-    @inlinable
     public func tripService(_ trip: TripIndex) -> ServiceIndex { tripServiceColumn[Int(trip)] }
 
     public func tripIdentifier(_ trip: TripIndex) -> String { string(at: tripIdentifierRef[Int(trip)]) }
@@ -462,17 +459,14 @@ public final class TransitGraph: @unchecked Sendable {
     }
 
     /// Index into `stopTimeArrivals` / `stopTimeDepartures`.
-    @inlinable
     public func stopTimeIndex(pattern: PatternIndex, tripOffset: Int, position: Int) -> Int {
         Int(patternStopTimeStart[Int(pattern)]) + tripOffset * patternStopCount(pattern) + position
     }
 
-    @inlinable
     public func arrivalTime(pattern: PatternIndex, tripOffset: Int, position: Int) -> ServiceSeconds {
         stopTimeArrivals[stopTimeIndex(pattern: pattern, tripOffset: tripOffset, position: position)]
     }
 
-    @inlinable
     public func departureTime(pattern: PatternIndex, tripOffset: Int, position: Int) -> ServiceSeconds {
         stopTimeDepartures[stopTimeIndex(pattern: pattern, tripOffset: tripOffset, position: position)]
     }
@@ -548,14 +542,12 @@ public final class TransitGraph: @unchecked Sendable {
 
     /// Position of `date` in the graph's bitset range, or nil when the feed does
     /// not cover it.
-    @inlinable
     public func dayIndex(for date: ServiceDate) -> Int? {
         let index = date.days(since: metadata.calendarStart)
         guard index >= 0, index < metadata.calendarDayCount else { return nil }
         return index
     }
 
-    @inlinable
     public func isServiceActive(_ service: ServiceIndex, dayIndex: Int) -> Bool {
         guard service >= 0, dayIndex >= 0, dayIndex < metadata.calendarDayCount else { return false }
         let byteIndex = Int(service) * metadata.serviceBitsetStride + (dayIndex >> 3)
