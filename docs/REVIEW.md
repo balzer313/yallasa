@@ -3,25 +3,76 @@
 Findings from the review pass, and — just as important — an honest statement of
 what could not be checked.
 
-## The caveat that governs everything below
+## Status: it compiles, and the tests pass
 
-**This code has never been compiled.** It was authored on a Windows machine with
-no Swift toolchain. Every review finding here comes from reading, not from a
-compiler, a test run, or a profiler.
+Verified on GitHub Actions macOS runners, which is how a project authored on
+Windows gets a compiler's opinion at all:
 
-That means:
+```
+Executed 200 tests, with 0 failures (0 unexpected) in 0.405 seconds
+** BUILD SUCCEEDED **          (iOS app, simulator, Xcode 16 / macos-15)
+```
 
-- **Type and syntax errors are likely to remain.** The seam audit checked call
-  sites against pinned signatures by hand, which catches structural mismatches
-  but will not catch every `Int` vs `Int32` conversion Swift demands explicitly.
+The engine builds and its whole suite passes; the app target builds for the
+simulator. What remains unverified is everything a *running* app would tell you:
+
 - **No performance number in `GOAL.md` or `ALGORITHM.md` has been measured.**
   They are design targets derived from the algorithm's complexity and from
-  published RAPTOR results — they are not observations, and they are labelled as
-  targets everywhere they appear.
-- **No test has been run.** The test suites are written and are meant to be the
-  first thing executed on a Mac.
+  published RAPTOR results, labelled as targets everywhere they appear.
+- **No real feed has been imported.** The endpoints in `DATA-SOURCES.md` are
+  verified as reachable and correctly sized; nothing has parsed one.
+- **The app has never been launched.** Compiling is not running.
 
-Treat the first `swift build && swift test` as a real work item.
+## What the first compile found
+
+Nine rounds of CI took it from "never compiled" to green. The interesting part is
+not the count but the shape: almost none of it was the algorithm.
+
+**Two were real defects that reading had missed.**
+
+*The build was missing nine files and nobody could have noticed.* `.gitignore`
+carried a bare `Feeds/` rule, intended for the app's runtime feed store. A bare
+directory name matches at **any depth**, so it silently excluded
+`Sources/MoveItKit/Feeds/` and `Tests/MoveItKitTests/Feeds/` from the repository.
+The first CI run failed with "cannot find type 'FeedManager'" — for a type that
+was sitting on disk the whole time. Worth internalising: an ignore rule is a
+glob, not a path, and the failure mode is silent absence.
+
+*`GeoBounds` could not be encoded to JSON.* `GeoBounds.empty` holds inverted
+infinities so that `extend(to:)` works with the first point added, and
+`JSONEncoder` refuses to encode a non-finite `Double`. So any graph with empty
+bounds — a region clip that matched no stops, or any fixture built without stops
+— threw while writing its metadata, and took the feed manifest down with it. This
+is a genuine production bug that reading did not catch and thirty test failures
+did. `GeoBounds` now encodes emptiness as a flag with the coordinates absent, and
+treats a non-finite value read from anywhere else as empty rather than letting an
+infinity into the grid arithmetic.
+
+**One was CI lying.** The app job piped `xcodebuild` into `xcpretty` (not
+installed on the runner) with a `|| exit ${PIPESTATUS[0]}` guard that does not
+survive the `||` boundary. The step took the formatter's exit status and the job
+went **green over a build that had failed outright**. A CI run that reports
+success over a failure is worse than no CI at all; the pipe is gone.
+
+**Two were tests asserting the wrong thing, where the code was right.**
+
+- The router declines to offer a delayed 08:00 bus once the 08:10 leaves earlier
+  *and* arrives earlier. That is correct Pareto behaviour — there is no rider
+  preference under which the delayed one wins — so the delay test was rewritten
+  to isolate the connection-slip on a fixture where the delayed trip is the only
+  service, and a second test now pins the domination behaviour explicitly.
+- `TransferBuilderTests` capped transfers at 300 s while expecting a 400 m hop
+  (406 s) to survive. The cap applies to every footpath, generated or closed.
+
+**The rest were ordinary mechanical friction** — `@inlinable` functions touching
+private storage, a missing `try`, an argument label, `Swift.withUnsafeBytes`
+shadowed inside a `Data` extension, `Info.plist` produced by two build commands,
+frontend-only flags passed without `-Xfrontend`, a `Task<()?, Never>` that would
+not fit a `Task<Void, Never>`.
+
+Notably absent from that list: RAPTOR, the graph format, the importer's pattern
+grouping, the protobuf decoder. The hard parts were written correctly; what broke
+was the plumbing around them.
 
 ## State of the code
 

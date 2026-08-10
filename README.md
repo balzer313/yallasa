@@ -106,21 +106,30 @@ displays both. If you ship this, honour them.
 
 ## Status
 
-Feature complete and fully tested on paper — every engine module, every screen,
-and test suites across the whole engine — but **never compiled**, because there
-was no Swift toolchain on the authoring machine. Treat the first `swift build` as
-part of the work, not as a formality.
+**Builds and passes its tests**, verified on GitHub Actions macOS runners:
 
-`docs/REVIEW.md` records what the review pass found — including a critical bug in
-the ZIP reader that would have broken every single feed import — and is explicit
-about what only a compiler and a real device can still check.
-
-Start here on a Mac:
-
-```bash
-swift build          # expect to fix compile diagnostics; nothing has been built
-swift test           # engine tests: IO, GTFS import, routing, realtime, feeds
 ```
+Executed 200 tests, with 0 failures (0 unexpected) in 0.405 seconds
+** BUILD SUCCEEDED **          (iOS app, simulator, Xcode 16)
+```
+
+The project was authored on Windows, where the iOS SDK does not exist, so CI on a
+macOS runner is what turned "written" into "known to compile". `.github/workflows/ci.yml`
+runs it on every push — you do not need a Mac to keep this honest.
+
+Still unverified, and worth being clear about:
+
+- **No performance number here has been measured.** Every figure in `GOAL.md` and
+  `docs/ALGORITHM.md` is a design target, labelled as one.
+- **No real feed has been imported.** The endpoints in `docs/DATA-SOURCES.md` are
+  verified reachable and correctly sized; nothing has parsed one end to end.
+- **The app has never been launched.** Compiling is not running. See
+  `docs/BUILDING-WITHOUT-A-MAC.md` for how to get it onto a phone.
+
+`docs/REVIEW.md` records what the review and the first nine CI rounds found —
+including a critical ZIP bug that would have broken every feed import, a
+`GeoBounds` encoding bug that would have broken every feed *install*, and a CI
+step that reported success over a failed build.
 
 The router tests are the ones to trust first: they build a real graph through the
 actual binary writer and assert hand-computed arrival times, including the
