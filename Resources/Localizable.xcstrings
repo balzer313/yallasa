@@ -1,6 +1,39 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ km/h": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ קמ״ש"
+          }
+        }
+      }
+    },
+    "%@ live · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ בזמן אמת · %@"
+          }
+        }
+      }
+    },
+    "%@ min walk": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ דקות הליכה"
+          }
+        }
+      }
+    },
     "%@ of %@": {
       "extractionState": "manual",
       "localizations": {
@@ -74,6 +107,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@: %@"
+          }
+        }
+      }
+    },
+    "%lld km/h": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld קמ״ש"
+          }
+        }
+      }
+    },
+    "%lld live · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld בזמן אמת · %@"
+          }
+        }
+      }
+    },
+    "%lld min walk": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld דקות הליכה"
+          }
+        }
+      }
+    },
+    "1 min walk": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "דקת הליכה אחת"
           }
         }
       }
@@ -595,6 +672,17 @@
         }
       }
     },
+    "Delayed": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מאחר"
+          }
+        }
+      }
+    },
     "Departing from": {
       "extractionState": "manual",
       "localizations": {
@@ -1079,6 +1167,17 @@
         }
       }
     },
+    "Last reported": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "דיווח אחרון"
+          }
+        }
+      }
+    },
     "Last update": {
       "extractionState": "manual",
       "localizations": {
@@ -1240,6 +1339,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "עיכובים בזמן אמת עדיין דורשים חיבור לרשת, ורק חלק מהמפעילים מפרסמים אותם. כשאין נתוני זמן אמת, יאללה סע מציג את הזמנים המתוכננים ואומר זאת במפורש במקום להעמיד פנים."
+          }
+        }
+      }
+    },
+    "Live positions unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מיקומים בזמן אמת אינם זמינים"
           }
         }
       }
@@ -1416,6 +1526,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "רוב אפליקציות התחבורה שולחות את נקודת המוצא והיעד שלכם לשרת, שמחשב את המסלול ומחזיר אותו. יאללה סע עושה את העבודה הזו על הטלפון שלכם במקום."
+          }
+        }
+      }
+    },
+    "Moving": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בתנועה"
           }
         }
       }
@@ -1640,6 +1761,17 @@
         }
       }
     },
+    "No vehicles reporting here": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אין כלי רכב שמדווחים כאן"
+          }
+        }
+      }
+    },
     "Nothing found": {
       "extractionState": "manual",
       "localizations": {
@@ -1757,6 +1889,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "פתיחת ההגדרות"
+          }
+        }
+      }
+    },
+    "Open this line": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פתיחת הקו"
           }
         }
       }
@@ -2355,6 +2498,17 @@
         }
       }
     },
+    "Stopped": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עומד"
+          }
+        }
+      }
+    },
     "Stops": {
       "extractionState": "manual",
       "localizations": {
@@ -2549,6 +2703,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "זהו מקור נתונים ארצי. התקנה של האזור שלכם בלבד שומרת עליו קטן ומהיר."
+          }
+        }
+      }
+    },
+    "This is the vehicle's reported position. It does not include an arrival estimate — the live feed reports where buses are, not when they will reach you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "זהו המיקום המדווח של כלי הרכב. הוא אינו כולל הערכת זמן הגעה — המקור בזמן אמת מדווח היכן האוטובוסים נמצאים, לא מתי הם יגיעו אליכם."
           }
         }
       }
@@ -3279,6 +3444,28 @@
         }
       }
     },
+    "here": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כאן"
+          }
+        }
+      }
+    },
+    "hr": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שע׳"
+          }
+        }
+      }
+    },
     "https://…/gtfs.zip": {
       "extractionState": "manual",
       "localizations": {
@@ -3297,6 +3484,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "הרגע"
+          }
+        }
+      }
+    },
+    "min": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "דק׳"
+          }
+        }
+      }
+    },
+    "moving": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בתנועה"
           }
         }
       }
@@ -3389,6 +3598,17 @@
         }
       }
     },
+    "stopped": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עומד"
+          }
+        }
+      }
+    },
     "to %@": {
       "extractionState": "manual",
       "localizations": {
@@ -3440,6 +3660,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "·"
+          }
+        }
+      }
+    },
+    "—": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
           }
         }
       }
