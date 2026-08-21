@@ -6,14 +6,14 @@ read this file (or `project.json` beside it) to understand the current state._
 - **Path:** D:\Projects\Move it
 - **Claude allowed:** yes
 - **Created:** 2026-08-09T08:58:38.277Z
-- **Updated:** 2026-08-21T12:19:10.854Z
+- **Updated:** 2026-08-21T12:24:12.944Z
 
 ## Sessions
 - **Active:** 1 (1 running)
 - **By type:** claude: 1
 
 ## Recent activity
-- 2026-08-21T12:19:10.552Z — claude "Claude - Move it" is running
+- 2026-08-21T12:24:12.635Z — claude "Claude - Move it" is running
 - 2026-08-14T18:36:52.440Z — claude "Claude - Move it" is exited
 
 ## Machine-readable
