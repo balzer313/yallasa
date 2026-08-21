@@ -79,7 +79,7 @@ struct LiveVehicleSheet: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(vehicle.mode.displayName)
-                    .font(Theme.Typography.headline)
+                    .font(Theme.Typography.rowTitle)
                 Text(Format.relativeAge(of: vehicle.position.recordedAt, now: now))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(
@@ -98,10 +98,10 @@ struct LiveVehicleSheet: View {
                 .foregroundStyle(Theme.Palette.secondaryText)
                 .frame(width: 20)
             Text(title)
-                .font(Theme.Typography.body)
+                .font(Theme.Typography.rowSubtitle)
             Spacer()
             Text(value)
-                .font(Theme.Typography.body)
+                .font(Theme.Typography.rowSubtitle)
                 .foregroundStyle(Theme.Palette.secondaryText)
         }
         .accessibilityElement(children: .combine)
