@@ -48,25 +48,25 @@ struct RootView: View {
             stack(path: $router.nearbyPath) {
                 NearbyView(service: service, presenter: presenter, location: location)
             }
-                .tabItem { Label(String(localized: "Nearby"), systemImage: "location.circle") }
+                .tabItem { Label(String(localized: "Nearby"), systemImage: "bus.fill") }
                 .tag(AppTab.nearby)
 
             stack(path: $router.planPath) {
                 PlannerView(service: service, presenter: presenter, places: places, location: location)
             }
-            .tabItem { Label(String(localized: "Plan"), systemImage: "arrow.triangle.turn.up.right.circle") }
+            .tabItem { Label(String(localized: "Plan"), systemImage: "point.topleft.down.to.point.bottomright.curvepath.fill") }
             .tag(AppTab.plan)
 
             stack(path: $router.linesPath) { LinesView() }
-                .tabItem { Label(String(localized: "Lines"), systemImage: "list.bullet") }
+                .tabItem { Label(String(localized: "Lines"), systemImage: "tram.fill") }
                 .tag(AppTab.lines)
 
             stack(path: $router.mapPath) { MapView() }
-                .tabItem { Label(String(localized: "Map"), systemImage: "map") }
+                .tabItem { Label(String(localized: "Map"), systemImage: "map.fill") }
                 .tag(AppTab.map)
 
             stack(path: $router.settingsPath) { SettingsView() }
-                .tabItem { Label(String(localized: "Settings"), systemImage: "gearshape") }
+                .tabItem { Label(String(localized: "Settings"), systemImage: "gearshape.fill") }
                 .tag(AppTab.settings)
         }
     }
