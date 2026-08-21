@@ -329,6 +329,13 @@ struct FeedInstallProgressView: View {
                 .foregroundStyle(Theme.Palette.secondaryText)
                 .multilineTextAlignment(.center)
 
+            // Named steps, because a single bar running for several minutes
+            // reads as a hang — especially where the download completes and the
+            // compile restarts the bar from zero.
+            InstallStageList(current: progress.stage)
+                .padding(.top, Theme.Spacing.small)
+                .frame(maxWidth: 320)
+
             if progress.stage == .downloading, progress.totalBytes > 0 {
                 Text("\(Format.fileSize(bytes: progress.bytesDownloaded)) of \(Format.fileSize(bytes: progress.totalBytes))")
                     .font(Theme.Typography.caption)
