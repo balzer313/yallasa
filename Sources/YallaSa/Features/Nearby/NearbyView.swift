@@ -123,7 +123,20 @@ struct NearbyView: View {
                         )
                     } else {
                         ForEach(groups) { group in
-                            stopCard(group, now: now)
+                            NearbyStopCard(
+                                group: group,
+                                now: now,
+                                hasLiveData: service.realtimeUpdatedAt != nil,
+                                onOpenStop: {
+                                    router.show(.stop(group.stop.stop), in: .nearby)
+                                },
+                                onOpenDeparture: { departure in
+                                    router.show(
+                                        .pattern(departure.pattern, position: departure.position),
+                                        in: .nearby
+                                    )
+                                }
+                            )
                         }
                     }
 
@@ -136,44 +149,6 @@ struct NearbyView: View {
                 }
                 .padding(Theme.Spacing.regular)
                 .animation(reduceMotion ? nil : .default, value: viewModel.selectedModes)
-            }
-        }
-    }
-
-    private func stopCard(_ group: NearbyViewModel.StopGroup, now: ServiceSeconds) -> some View {
-        SectionCard(title: nil) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.small) {
-                Button {
-                    router.show(.stop(group.stop.stop), in: .nearby)
-                } label: {
-                    StopRowView(item: group.stop)
-                }
-                .buttonStyle(.plain)
-
-                Divider()
-
-                ForEach(group.departures.prefix(NearbyViewModel.rowsPerStop)) { departure in
-                    Button {
-                        router.show(
-                            .pattern(departure.pattern, position: departure.position),
-                            in: .nearby
-                        )
-                    } label: {
-                        DepartureRowView(item: departure, now: now, showsStop: false)
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                if group.departures.count > NearbyViewModel.rowsPerStop {
-                    Button {
-                        router.show(.stop(group.stop.stop), in: .nearby)
-                    } label: {
-                        Text("See all \(group.departures.count) departures")
-                            .font(Theme.Typography.caption)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.accent)
-                }
             }
         }
     }

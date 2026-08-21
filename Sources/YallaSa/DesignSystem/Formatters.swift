@@ -135,6 +135,30 @@ public enum Format {
         String(localized: "\(duration(seconds: seconds)) walk · \(distance(meters: meters))")
     }
 
+    /// Default walking pace, matching the planner's own default of 1.33 m/s.
+    ///
+    /// Kept here as metres per minute because that is the unit this conversion
+    /// wants, and rounded rather than derived so a rider changing the planner's
+    /// speed slider does not silently change what "5 min walk" means on a card
+    /// that is not a journey plan.
+    private static let walkingMetresPerMinute = 80.0
+
+    /// A distance expressed as the thing the rider actually needs: how long it
+    /// takes to walk.
+    ///
+    /// "320 m" requires the reader to convert before they can decide whether
+    /// they will make a bus leaving in 4 minutes. "4 min walk" is the answer to
+    /// the question they were really asking. Straight-line distance times the
+    /// planner's detour allowance is still an estimate, so it is deliberately
+    /// coarse — never precise to the second.
+    public static func walkTime(meters: Double) -> String {
+        guard meters.isFinite, meters > 0 else { return String(localized: "here") }
+        let minutes = Int((meters / walkingMetresPerMinute).rounded(.up))
+        if minutes <= 1 { return String(localized: "1 min walk") }
+        if minutes > 60 { return String(localized: "\(distance(meters: meters)) away") }
+        return String(localized: "\(minutes) min walk")
+    }
+
     // MARK: - Journey summary
 
     /// "3 stops" / "1 stop"
