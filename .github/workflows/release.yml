@@ -33,7 +33,7 @@ concurrency:
 jobs:
   testflight:
     name: Archive, sign, upload
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
 
     env:
@@ -60,8 +60,25 @@ jobs:
           fi
           echo "All four secrets are set."
 
-      - name: Show toolchain
-        run: xcodebuild -version
+      # App Store Connect rejects anything built against an SDK older than
+      # iOS 26 (Xcode 26). The runner image ships several Xcodes; take the
+      # newest and fail loudly if it is still too old, because the alternative
+      # is a 409 twenty minutes later at the upload.
+      - name: Select the newest Xcode
+        run: |
+          ls -d /Applications/Xcode*.app
+          NEWEST=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sed "s|.*/Xcode_||; s|.app$||" | sort -V | tail -1)
+          if [ -z "$NEWEST" ]; then NEWEST_PATH=/Applications/Xcode.app; else NEWEST_PATH=/Applications/Xcode_$NEWEST.app; fi
+          echo "selecting $NEWEST_PATH"
+          sudo xcode-select -s "$NEWEST_PATH"
+          xcodebuild -version
+          SDK=$(xcodebuild -showsdks | grep -o "iphoneos[0-9.]*" | tail -1 | sed "s/iphoneos//")
+          echo "iOS SDK: $SDK"
+          MAJOR=${SDK%%.*}
+          if [ "$MAJOR" -lt 26 ]; then
+            echo "::error::iOS SDK $SDK is too old. App Store Connect requires 26 or later."
+            exit 1
+          fi
 
       - name: Install XcodeGen
         run: brew install xcodegen
