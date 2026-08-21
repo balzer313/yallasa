@@ -1596,6 +1596,28 @@
         }
       }
     },
+    "Most lines do not run right now. Service returns around %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רוב הקווים אינם פועלים כעת. השירות חוזר בסביבות %@."
+          }
+        }
+      }
+    },
+    "Most lines do not run right now. Service returns around %lld.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "רוב הקווים אינם פועלים כעת. השירות חוזר בסביבות %lld."
+          }
+        }
+      }
+    },
     "Most transit apps send your starting point and destination to a server, which works out the route and sends it back. Yalla Sa does that work on your phone instead.": {
       "extractionState": "manual",
       "localizations": {
@@ -2384,6 +2406,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "הגדרות"
+          }
+        }
+      }
+    },
+    "Shabbat": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שבת"
           }
         }
       }

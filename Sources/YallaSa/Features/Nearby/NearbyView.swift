@@ -96,6 +96,10 @@ struct NearbyBoard: View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: Theme.Spacing.medium) {
+                    // Above the alerts: on a Saturday morning this is the
+                    // explanation for everything else on the screen.
+                    ShabbatNotice(now: timeline.date)
+
                     if !service.alerts.isEmpty {
                         AlertsBanner(alerts: service.alerts) { isShowingAlerts = true }
                     }
