@@ -650,6 +650,17 @@
         }
       }
     },
+    "Collapsed": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מכווץ"
+          }
+        }
+      }
+    },
     "Compiled timetables can be deleted and downloaded again at any time.": {
       "extractionState": "manual",
       "localizations": {
@@ -745,6 +756,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "יציאות"
+          }
+        }
+      }
+    },
+    "Departures panel": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לוח היציאות"
           }
         }
       }
@@ -855,6 +877,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "הכול רץ על הטלפון שלכם"
+          }
+        }
+      }
+    },
+    "Expanded": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פתוח"
           }
         }
       }
@@ -1042,6 +1075,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "מוריד את לוח הזמנים של ישראל"
+          }
+        }
+      }
+    },
+    "Half open": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פתוח למחצה"
           }
         }
       }
@@ -1937,6 +1981,17 @@
         }
       }
     },
+    "Opens the journey planner": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פותח את מתכנן המסלולים"
+          }
+        }
+      }
+    },
     "Opens the place picker": {
       "extractionState": "manual",
       "localizations": {
@@ -2604,6 +2659,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "החלפה בין המוצא ליעד"
+          }
+        }
+      }
+    },
+    "Swipe up or down to resize": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החליקו למעלה או למטה כדי לשנות את הגודל"
           }
         }
       }
