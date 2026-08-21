@@ -43,6 +43,14 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
     public var bounds: GeoBounds?
     /// The clip box applied at import when the caller does not supply one.
     public var defaultBoundingBox: GeoBounds?
+    /// A keyless source of live vehicle positions, where one exists.
+    ///
+    /// Deliberately not one of the two realtime URLs above: those are GTFS-RT
+    /// protobuf endpoints answering "how late is this trip", and this answers
+    /// "where is this bus" over a different protocol. Israel publishes SIRI
+    /// behind an API key, so its `realtimeTripUpdatesURL` stays nil while this
+    /// is set.
+    public var vehiclePositions: VehiclePositionService?
 
     public init(
         id: String,
@@ -57,7 +65,8 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
         licenseURL: URL? = nil,
         approximateDownloadMegabytes: Int = 0,
         bounds: GeoBounds? = nil,
-        defaultBoundingBox: GeoBounds? = nil
+        defaultBoundingBox: GeoBounds? = nil,
+        vehiclePositions: VehiclePositionService? = nil
     ) {
         self.id = id
         self.name = name
@@ -72,6 +81,7 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
         self.approximateDownloadMegabytes = approximateDownloadMegabytes
         self.bounds = bounds
         self.defaultBoundingBox = defaultBoundingBox
+        self.vehiclePositions = vehiclePositions
     }
 
     // MARK: - Derived
@@ -85,6 +95,14 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
     public var hasRealtime: Bool {
         realtimeTripUpdatesURL != nil || realtimeAlertsURL != nil
     }
+
+    /// True when the map can draw moving vehicles for this feed.
+    ///
+    /// Independent of `hasRealtime`, and Israel is exactly why: it has live
+    /// positions but no trip updates, so its map moves while its departure
+    /// boards stay scheduled. Telling the rider which of the two they are
+    /// looking at is the UI's job.
+    public var hasLiveVehicles: Bool { vehiclePositions != nil }
 
     /// A byte estimate for progress reporting before the server answers.
     public var estimatedDownloadBytes: Int64 {
@@ -147,6 +165,7 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
         case realtimeTripUpdatesURL, realtimeAlertsURL
         case requestHeaders, attribution, licenseURL
         case approximateDownloadMegabytes, bounds, defaultBoundingBox
+        case vehiclePositions
     }
 
     public init(from decoder: Decoder) throws {
@@ -165,5 +184,9 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
             try container.decodeIfPresent(Int.self, forKey: .approximateDownloadMegabytes) ?? 0
         self.bounds = try container.decodeIfPresent(GeoBounds.self, forKey: .bounds)
         self.defaultBoundingBox = try container.decodeIfPresent(GeoBounds.self, forKey: .defaultBoundingBox)
+        // Unknown or newer values decode as nil rather than throwing: a manifest
+        // written by a later build must not make an installed feed unreadable.
+        self.vehiclePositions =
+            try? container.decodeIfPresent(VehiclePositionService.self, forKey: .vehiclePositions)
     }
 }

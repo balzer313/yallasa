@@ -49,7 +49,12 @@ public enum FeedCatalog {
         "Israel Ministry of Transport and Road Safety — public transport open data"
 
     /// The MOT publishes SIRI rather than GTFS-realtime, and it needs a key, so
-    /// both realtime URLs stay nil here.
+    /// both realtime URLs stay nil here — there are no trip updates for Israel
+    /// and departure boards show scheduled times.
+    ///
+    /// Live *positions* are a different matter. Open Bus re-publishes the same
+    /// MOT SIRI stream over a keyless JSON API, so `vehiclePositions` is set and
+    /// the map can show buses actually moving. See `StrideVehicleSource`.
     private static func israelSource(id: String, name: String, region: FeedRegion) -> FeedSource {
         FeedSource(
             id: id,
@@ -62,7 +67,8 @@ public enum FeedCatalog {
             bounds: region.bounds,
             // A little wider than the region itself, so a route that dips just
             // outside the box still has both of its ends.
-            defaultBoundingBox: region.bounds.expanded(byMeters: 8_000)
+            defaultBoundingBox: region.bounds.expanded(byMeters: 8_000),
+            vehiclePositions: .openBusStride
         )
     }
 
@@ -81,7 +87,8 @@ public enum FeedCatalog {
             bounds: israelNationalBounds,
             // No default clip: this entry exists precisely for the caller who
             // wants everything, or who wants to draw their own box.
-            defaultBoundingBox: nil
+            defaultBoundingBox: nil,
+            vehiclePositions: .openBusStride
         ),
     ]
 
