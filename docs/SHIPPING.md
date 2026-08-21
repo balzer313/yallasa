@@ -30,7 +30,11 @@ constraint anywhere in the chain.
 
 1. <https://appstoreconnect.apple.com> → **Users and Access** → **Integrations**
 2. Left sidebar: **App Store Connect API** → **Team Keys**
-3. **+**, name it `GitHub CI`, access **App Manager**, **Generate**
+3. **+**, name it `GitHub CI`, access **Admin**, **Generate**
+   > **Admin, not App Manager.** App Manager can upload a build but cannot
+   > create a distribution certificate, so `-exportArchive` fails with
+   > "Cloud signing permission error". A key's role cannot be changed after
+   > it is generated — getting this wrong costs you a new key.
 4. **Download the `.p8` — Apple allows this exactly once.** Keep it safe.
 5. Note the **Key ID** (10 characters) and the **Issuer ID** (a UUID at the top).
 
