@@ -19,17 +19,28 @@ public struct JourneyCardView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
-            headline
-            if !item.badges.isEmpty { badgeStrip }
-            summaryLine
+        HStack(spacing: 0) {
+            // The colour of the first line the rider boards, matching the spine
+            // on departure cards and line rows. Three list surfaces, one visual
+            // language for "which line is this".
+            Rectangle()
+                .fill(spineColor)
+                .frame(width: 4)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
+                headline
+                if !item.badges.isEmpty { badgeStrip }
+                summaryLine
+            }
+            .padding(Theme.Spacing.regular)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(Theme.Spacing.regular)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous)
                 .fill(Theme.Palette.surface)
         )
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous)
                 .strokeBorder(Theme.Palette.separator.opacity(0.5), lineWidth: 0.5)
@@ -37,6 +48,13 @@ public struct JourneyCardView: View {
         .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    /// A walk-only journey has no line to take its colour from, so it uses the
+    /// walking grey rather than defaulting to something that implies a bus.
+    private var spineColor: Color {
+        guard let badge = item.badges.first else { return Theme.Palette.walk }
+        return Theme.Palette.lineColor(badge.backgroundHex)
     }
 
     private var headline: some View {

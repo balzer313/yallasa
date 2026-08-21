@@ -159,6 +159,16 @@ struct LineRowView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: Theme.Spacing.medium) {
+            // The same coloured spine the departure cards use. Scanning a list
+            // of four hundred lines is a colour-and-shape task before it is a
+            // reading task, and this is the app's one visual language for
+            // "which line is this".
+            Rectangle()
+                .fill(Theme.Palette.lineColor(line.badge.backgroundHex))
+                .frame(width: 3)
+                .clipShape(Capsule())
+                .accessibilityHidden(true)
+
             LineBadge(line.badge, size: .regular)
 
             VStack(alignment: .leading, spacing: Theme.Spacing.hairline) {
@@ -183,7 +193,7 @@ struct LineRowView: View {
                     .accessibilityHidden(true)
             }
         }
-        .padding(.vertical, Theme.Spacing.tight)
+        .padding(.vertical, Theme.Spacing.small)
         .frame(minHeight: Theme.minimumTouchTarget)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
