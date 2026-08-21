@@ -75,6 +75,15 @@ struct MapView: View {
 
     @State private var camera: MapCameraPosition = .automatic
     @State private var selected: StopItem?
+    @State private var selectedVehicle: LiveVehicle?
+    /// The region the map is showing, kept so the polling task can ask for
+    /// vehicles in exactly what is on screen rather than a guess.
+    @State private var visibleBounds: GeoBounds?
+    /// Drives the staleness fade. Vehicles do not move between polls but their
+    /// *age* does, and a marker that never dims is the bug this avoids.
+    @State private var tick = Date()
+
+    private static let tickInterval: TimeInterval = 5
 
     init(service: TransitService = .shared, presenter: Presenter? = nil) {
         _viewModel = StateObject(
@@ -88,6 +97,23 @@ struct MapView: View {
     var body: some View {
         Map(position: $camera) {
             UserAnnotation()
+
+            // Vehicles are added after stops so they draw on top: a moving bus
+            // hidden behind a stop pin is the one thing the rider is looking for.
+            ForEach(service.liveVehicles) { vehicle in
+                Annotation(
+                    vehicle.lineName,
+                    coordinate: CLLocationCoordinate2D(
+                        latitude: vehicle.position.point.latitude,
+                        longitude: vehicle.position.point.longitude
+                    )
+                ) {
+                    Button { selectedVehicle = vehicle } label: {
+                        LiveVehicleMarker(vehicle: vehicle, now: tick)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
 
             ForEach(viewModel.stops) { stop in
                 Annotation(
@@ -121,8 +147,24 @@ struct MapView: View {
             // enough proxy for "how much am I looking at".
             let spanMeters = region.span.latitudeDelta * 110_540
             viewModel.regionChanged(centre: centre, spanMeters: spanMeters)
+
+            visibleBounds = GeoBounds(
+                minLatitude: region.center.latitude - region.span.latitudeDelta / 2,
+                minLongitude: region.center.longitude - region.span.longitudeDelta / 2,
+                maxLatitude: region.center.latitude + region.span.latitudeDelta / 2,
+                maxLongitude: region.center.longitude + region.span.longitudeDelta / 2
+            )
         }
         .overlay(alignment: .top) { banner }
+        .overlay(alignment: .bottomLeading) { liveChip }
+        .sheet(item: $selectedVehicle) { vehicle in
+            LiveVehicleSheet(vehicle: vehicle, now: tick) {
+                guard let route = vehicle.route else { return }
+                selectedVehicle = nil
+                router.show(.route(route), in: .map)
+            }
+            .presentationDetents([.height(280)])
+        }
         .sheet(item: $selected) { stop in
             MapStopSheet(stop: stop) {
                 selected = nil
@@ -132,6 +174,22 @@ struct MapView: View {
         }
         .navigationTitle(Text("Map"))
         .navigationBarTitleDisplayMode(.inline)
+        .task(id: service.activeFeed?.id) {
+            guard service.supportsLiveVehicles else { return }
+            service.startLiveVehiclePolling(bounds: { visibleBounds })
+        }
+        .task {
+            // A timer rather than a per-marker one: 300 markers each animating
+            // their own age is 300 view invalidations a second.
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(Self.tickInterval * 1_000_000_000))
+                tick = Date()
+            }
+        }
+        .onDisappear {
+            service.stopLiveVehiclePolling()
+            service.clearLiveVehicles()
+        }
         .task {
             if let here = location.coordinate ?? service.activeFeed?.metadata.bounds.centerIfValid {
                 camera = .region(
@@ -142,6 +200,19 @@ struct MapView: View {
                     )
                 )
             }
+        }
+    }
+
+    @ViewBuilder
+    private var liveChip: some View {
+        if service.supportsLiveVehicles {
+            LiveStatusChip(
+                updatedAt: service.liveVehiclesUpdatedAt,
+                vehicleCount: service.liveVehicles.count,
+                failed: service.liveVehiclesFailed,
+                now: tick
+            )
+            .padding(Theme.Spacing.medium)
         }
     }
 
