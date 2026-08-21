@@ -584,6 +584,17 @@
         }
       }
     },
+    "Choose a smaller area instead": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בחירת אזור קטן יותר במקום"
+          }
+        }
+      }
+    },
     "Choose a starting point": {
       "extractionState": "manual",
       "localizations": {
@@ -1024,6 +1035,17 @@
         }
       }
     },
+    "Getting the timetable for Israel": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מוריד את לוח הזמנים של ישראל"
+          }
+        }
+      }
+    },
     "Home": {
       "extractionState": "manual",
       "localizations": {
@@ -1064,6 +1086,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "דוח ייבוא"
+          }
+        }
+      }
+    },
+    "In progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "בתהליך"
           }
         }
       }
@@ -2619,6 +2652,17 @@
         }
       }
     },
+    "The download did not finish": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההורדה לא הושלמה"
+          }
+        }
+      }
+    },
     "The installed timetable does not contain any routes with scheduled service.": {
       "extractionState": "manual",
       "localizations": {
@@ -3048,6 +3092,17 @@
         }
       }
     },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסו שוב"
+          }
+        }
+      }
+    },
     "Turn on location to see the stops around you, or search for a stop by name.": {
       "extractionState": "manual",
       "localizations": {
@@ -3187,6 +3242,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "גרסת מסלול"
+          }
+        }
+      }
+    },
+    "Waiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ממתין"
           }
         }
       }

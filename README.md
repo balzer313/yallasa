@@ -145,10 +145,14 @@ Executed 200 tests, with 0 failures (0 unexpected) in 0.405 seconds
 The project was authored on Windows, where the iOS SDK does not exist, so CI on a
 macOS runner is what turned "written" into "known to compile".
 
-**The feed endpoints are live.** Probed 2026-08-21: the Israel MOT archive
-returns 139,433,456 bytes with a valid `ETag` and a `Last-Modified` one day old;
-all four MTA static archives serve over HTTPS; the MTA realtime endpoint returns
-protobuf with no API key. The archive is ZIP64, and the reader handles it.
+**The feed endpoint is live, and so are the buses.** Verified 2026-08-21: the
+MOT archive returns 139,433,456 bytes with a valid  and a one day old, and it is ZIP64 —  was extracted from it by range
+request and inflated to exactly its declared 956,158 bytes.
+
+Live positions were checked end to end against the real API: **107 vehicles, 77
+lines, 65 moving, freshest fix 80 seconds old**, and **75 of 75 sampled SIRI
+ values matched a GTFS ** in the real 7,605-route feed.
+ re-runs that check every Monday.
 
 Still unverified, and worth being clear about:
 
@@ -159,15 +163,12 @@ Still unverified, and worth being clear about:
 - **No performance number here has been measured.** Every figure in `GOAL.md`
   and `docs/ALGORITHM.md` is a design target, labelled as one.
 
-### Known issue: large entries are inflated whole
-
-`ZipArchive.withBytes` allocates the full uncompressed size of an entry in one
-buffer. In the Israel archive `stop_times.txt` is **520 MB** uncompressed and
-`shapes.txt` is **219 MB**, against a stated budget of 250 MB peak. The ceiling
-at `ZipArchive.swift:51` is 2 GB, so nothing rejects it — the allocation is
-simply attempted. Importing that feed on a device needs a streaming inflate
-feeding `CSVReader` in chunks, which is not written yet. Smaller city feeds are
-unaffected.
+### Solved: large entries no longer inflate whole
+ used to allocate an entry's full uncompressed size in one buffer.
+Israel's  is **520 MB** uncompressed and  is 219 MB,
+against a 250 MB budget — a jetsam kill on first run. Entries over 32 MB now
+inflate to a temporary file in 4 MB chunks and are memory-mapped, so resident
+memory stays flat and  sees the contiguous buffer it always did.
 
 `docs/REVIEW.md` records what the review and the first nine CI rounds found —
 including a critical ZIP bug that would have broken every feed import, a
