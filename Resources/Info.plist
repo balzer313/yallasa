@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Move It</string>
+	<string>יאללה סע</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,7 +26,7 @@
 	     mode and no always-authorization request, because there is no server to
 	     send a location to and nothing that needs one while backgrounded. -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Move It uses your location to show the stops around you and the next departures from them. Your location never leaves your phone.</string>
+	<string>Yalla Sa uses your location to show the stops around you and the next departures from them. Your location never leaves your phone.</string>
 
 	<key>UILaunchScreen</key>
 	<dict>

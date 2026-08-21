@@ -1,0 +1,167 @@
+# Builds a signed release and uploads it to TestFlight.
+#
+# The point of this file is that it needs no Mac. Apple only ships Xcode for
+# macOS, but a GitHub macOS runner *is* macOS — and `-allowProvisioningUpdates`
+# with an App Store Connect API key lets Xcode create the signing certificate
+# and the provisioning profile on the runner itself. Nothing has to be exported
+# from a Mac you own, because there is no Mac you own.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID     — the 10-character Key ID of the App Store Connect API key
+#   ASC_ISSUER_ID  — the issuer UUID shown above the key list
+#   ASC_KEY_P8     — the full contents of the AuthKey_XXXXXXXXXX.p8 file
+#   ASC_TEAM_ID    — the 10-character Team ID from developer.apple.com membership
+#
+# Run it from the Actions tab: "Release (TestFlight)" → Run workflow.
+
+name: Release (TestFlight)
+
+on:
+  workflow_dispatch:
+    inputs:
+      marketing_version:
+        description: "Version shown in the App Store (e.g. 1.0). Leave blank to keep project.yml's."
+        required: false
+        default: ""
+
+concurrency:
+  # Two archives uploading the same build number is a wasted 20 minutes and a
+  # confusing TestFlight list.
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    name: Archive, sign, upload
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail in five seconds with a readable message rather than twenty minutes
+      # later inside xcodebuild's output.
+      - name: Check the secrets are present
+        run: |
+          missing=""
+          [ -n "$ASC_KEY_ID" ]              || missing="$missing ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ]           || missing="$missing ASC_ISSUER_ID"
+          [ -n "$ASC_TEAM_ID" ]             || missing="$missing ASC_TEAM_ID"
+          [ -n "${{ secrets.ASC_KEY_P8 }}" ] || missing="$missing ASC_KEY_P8"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "All four secrets are set."
+
+      - name: Show toolchain
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      # altool and xcodebuild both look for the key at this exact path and file
+      # name, which is why it is not just dropped in the workspace.
+      - name: Install the App Store Connect API key
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          chmod 600 ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
+      - name: Archive
+        run: |
+          set -o pipefail
+          VERSION_ARG=""
+          if [ -n "${{ inputs.marketing_version }}" ]; then
+            VERSION_ARG="MARKETING_VERSION=${{ inputs.marketing_version }}"
+          fi
+          # CURRENT_PROJECT_VERSION must be unique per upload; the run number is
+          # monotonic and never reused, which is exactly the contract TestFlight
+          # wants for a build number.
+          xcodebuild archive \
+            -project YallaSa.xcodeproj \
+            -scheme YallaSa \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/YallaSa.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$ASC_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            $VERSION_ARG
+
+      - name: Write export options
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>${ASC_TEAM_ID}</string>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>destination</key>
+            <string>export</string>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Export the .ipa
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/YallaSa.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          ls -la "$RUNNER_TEMP/export"
+
+      - name: Validate before uploading
+        run: |
+          IPA=$(ls "$RUNNER_TEMP/export"/*.ipa | head -1)
+          echo "Validating $IPA"
+          xcrun altool --validate-app -f "$IPA" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Upload to TestFlight
+        run: |
+          IPA=$(ls "$RUNNER_TEMP/export"/*.ipa | head -1)
+          echo "Uploading $IPA"
+          xcrun altool --upload-app -f "$IPA" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      # Kept regardless of the upload result: if App Store Connect rejects the
+      # binary you still want the thing it rejected.
+      - name: Keep the build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: YallaSa-build-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Where it went
+        run: |
+          echo "Build ${{ github.run_number }} uploaded."
+          echo "It appears in App Store Connect → TestFlight after ~5-15 minutes of processing."

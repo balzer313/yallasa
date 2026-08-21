@@ -1,6 +1,6 @@
 # Module contracts
 
-This file is normative. Every module in `MoveItKit` is written against the
+This file is normative. Every module in `YallaSaKit` is written against the
 signatures below, and nothing outside a module may depend on anything not listed
 here. If an implementation needs a different signature, this file changes first.
 
@@ -33,12 +33,12 @@ rather than reimplementing them:
    used from a background queue and its results are consumed on the main actor.
 5. **Times are `ServiceSeconds` in a named day frame.** Never `TimeInterval`,
    never a bare `Date`, until the display boundary.
-6. Files live under `Sources/MoveItKit/<Area>/`; tests under
-   `Tests/MoveItKitTests/<Area>/`.
+6. Files live under `Sources/YallaSaKit/<Area>/`; tests under
+   `Tests/YallaSaKitTests/<Area>/`.
 
 ---
 
-## 1. IO — `Sources/MoveItKit/IO/`
+## 1. IO — `Sources/YallaSaKit/IO/`
 
 ### `ZipArchive`
 
@@ -125,7 +125,7 @@ surrounding whitespace trimmed, because real feeds contain both.
 
 ---
 
-## 2. GTFS import — `Sources/MoveItKit/GTFS/`
+## 2. GTFS import — `Sources/YallaSaKit/GTFS/`
 
 ```swift
 public struct GTFSImportOptions: Sendable {
@@ -217,7 +217,7 @@ public enum GTFSImportError: Error, LocalizedError, Equatable {
 
 ---
 
-## 3. Routing — `Sources/MoveItKit/Routing/`
+## 3. Routing — `Sources/YallaSaKit/Routing/`
 
 ```swift
 public final class JourneyPlanner {
@@ -269,7 +269,7 @@ public final class DepartureBoardService {
 
 ---
 
-## 4. Realtime — `Sources/MoveItKit/Realtime/`
+## 4. Realtime — `Sources/YallaSaKit/Realtime/`
 
 ```swift
 public enum ProtobufWireType: UInt8 { case varint, fixed64, lengthDelimited, startGroup, endGroup, fixed32 }
@@ -318,7 +318,7 @@ implementation does and what riders expect.
 
 ---
 
-## 5. Feeds — `Sources/MoveItKit/Feeds/`
+## 5. Feeds — `Sources/YallaSaKit/Feeds/`
 
 ```swift
 public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
@@ -383,7 +383,7 @@ bump can recompile without re-downloading, subject to a disk budget.
 
 ---
 
-## 6. App-facing facade — `Sources/MoveItKit/TransitService.swift`
+## 6. App-facing facade — `Sources/YallaSaKit/TransitService.swift`
 
 The app never touches `JourneyPlanner`, `TransitGraph` or `FeedManager` directly.
 

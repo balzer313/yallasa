@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Apple requires this file at upload. Its claims are checked against the
+	     binary's symbols, so every entry below corresponds to a real call site;
+	     declaring less than the code does is a rejection, declaring more is a
+	     lie told to the reader of the privacy label. -->
+
+	<!-- No tracking. There is no analytics SDK, no advertising identifier and no
+	     third-party network call anywhere in the app; the only hosts it contacts
+	     are the transit agencies' own GTFS endpoints. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!-- Nothing is collected. This is not a policy choice that could quietly
+	     change: the app has no backend to collect anything *to*. Location is
+	     read on-device to sort nearby stops and is never written to a network
+	     request; journeys are planned against a local file. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- FeedManager reads contentModificationDateKey on installed feed
+		     files to decide whether a timetable is stale and to show the
+		     rider when their data was last refreshed. Container files only. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+
+		<!-- Settings, the selected feed, saved places and favourite lines are
+		     stored in UserDefaults belonging to this app. Not shared with an
+		     app group, not read from any other process. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

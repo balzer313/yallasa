@@ -33,7 +33,7 @@ not the count but the shape: almost none of it was the algorithm.
 *The build was missing nine files and nobody could have noticed.* `.gitignore`
 carried a bare `Feeds/` rule, intended for the app's runtime feed store. A bare
 directory name matches at **any depth**, so it silently excluded
-`Sources/MoveItKit/Feeds/` and `Tests/MoveItKitTests/Feeds/` from the repository.
+`Sources/YallaSaKit/Feeds/` and `Tests/YallaSaKitTests/Feeds/` from the repository.
 The first CI run failed with "cannot find type 'FeedManager'" — for a type that
 was sitting on disk the whole time. Worth internalising: an ignore rule is a
 glob, not a path, and the failure mode is silent absence.
@@ -95,7 +95,7 @@ first compile is most likely to need attention.
 
 ### How the tests are built
 
-Two decisions in `Tests/MoveItKitTests/Support/` are worth knowing before
+Two decisions in `Tests/YallaSaKitTests/Support/` are worth knowing before
 changing anything there:
 
 **`GraphFixture` is not a mock.** It writes the real binary format through
@@ -122,7 +122,7 @@ robustness nit.
 
 ### 1. `ZipArchive.inflate` rejected every deflated entry — **critical**, fixed
 
-`Sources/MoveItKit/IO/ZipArchive.swift`
+`Sources/YallaSaKit/IO/ZipArchive.swift`
 
 The output buffer was allocated at exactly the entry's declared uncompressed
 size, and the loop treated `COMPRESSION_STATUS_OK` with a full destination as
@@ -180,7 +180,7 @@ by transport authorities, not products with SLAs. Degrade, never trust.
 
 ### 4. Extended GTFS route types were mapped with overlapping patterns — **major**, fixed
 
-`Sources/MoveItKit/Core/RouteType.swift`
+`Sources/YallaSaKit/Core/RouteType.swift`
 
 The first draft of `TransitMode(gtfsRouteType:)` had overlapping `case` patterns
 (`405` in both the monorail and urban-railway arms, `1500...1507` overlapping the
@@ -215,7 +215,7 @@ Recorded so they are decisions rather than drift.
 
 ## What a compiler and a device still have to check
 
-1. `swift build` and `swift test` for `MoveItKit`, then `xcodegen generate` and a
+1. `swift build` and `swift test` for `YallaSaKit`, then `xcodegen generate` and a
    device build of the app.
 2. **A real feed end to end.** Compile NYC subway (5.6 MB — the fast loop) and
    then the Israel national feed clipped to Tel Aviv (141 MB — the stress case).

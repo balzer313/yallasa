@@ -2,18 +2,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "MoveItKit",
+    name: "YallaSaKit",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),
     ],
     products: [
-        .library(name: "MoveItKit", targets: ["MoveItKit"]),
+        .library(name: "YallaSaKit", targets: ["YallaSaKit"]),
     ],
     targets: [
         .target(
-            name: "MoveItKit",
-            path: "Sources/MoveItKit",
+            name: "YallaSaKit",
+            path: "Sources/YallaSaKit",
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals"),
                 // Deliberately NOT -Ounchecked. It was here for speed, and it was
@@ -27,9 +27,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "MoveItKitTests",
-            dependencies: ["MoveItKit"],
-            path: "Tests/MoveItKitTests"
+            name: "YallaSaKitTests",
+            dependencies: ["YallaSaKit"],
+            path: "Tests/YallaSaKitTests"
         ),
     ]
 )

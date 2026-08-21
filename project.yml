@@ -5,15 +5,23 @@
 # .pbxproj is a merge-conflict machine and because this repository is authored on
 # a machine without Xcode — the spec is reviewable, the generated project is not.
 
-name: MoveIt
+name: YallaSa
 options:
-  bundleIdPrefix: com.moveit
+  bundleIdPrefix: com.yallasa
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
   groupSortPosition: top
   generateEmptyDirectories: false
   xcodeVersion: "15.0"
+  # Hebrew is the product language; English is the source language the
+  # literals are written in and the fallback for any other locale.
+  developmentLanguage: en
+
+knownRegions:
+  - en
+  - he
+  - Base
 
 settings:
   base:
@@ -34,15 +42,15 @@ settings:
       VALIDATE_PRODUCT: YES
 
 packages:
-  MoveItKit:
+  YallaSaKit:
     path: .
 
 targets:
-  MoveIt:
+  YallaSa:
     type: application
     platform: iOS
     sources:
-      - path: Sources/MoveIt
+      - path: Sources/YallaSa
         excludes:
           - "**/.DS_Store"
       - path: Resources
@@ -54,12 +62,12 @@ targets:
           # "Multiple commands produce .../Info.plist".
           - "Info.plist"
     dependencies:
-      - package: MoveItKit
-        product: MoveItKit
+      - package: YallaSaKit
+        product: YallaSaKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.moveit.app
-        PRODUCT_NAME: Move It
+        PRODUCT_BUNDLE_IDENTIFIER: com.yallasa.app
+        PRODUCT_NAME: YallaSa
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         INFOPLIST_FILE: Resources/Info.plist
@@ -73,36 +81,36 @@ targets:
         # so they must never be swept into an iCloud backup.
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
 
-  MoveItTests:
+  YallaSaTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: Tests/MoveItAppTests
+      - path: Tests/YallaSaAppTests
     dependencies:
-      - target: MoveIt
-      - package: MoveItKit
-        product: MoveItKit
+      - target: YallaSa
+      - package: YallaSaKit
+        product: YallaSaKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.moveit.app.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.yallasa.app.tests
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
-  MoveIt:
+  YallaSa:
     build:
       targets:
-        MoveIt: all
+        YallaSa: all
     run:
       config: Debug
       environmentVariables:
-        - variable: MOVEIT_LOG_LEVEL
+        - variable: YALLASA_LOG_LEVEL
           value: debug
           isEnabled: true
     test:
       config: Debug
       gatherCoverageData: true
       targets:
-        - MoveItTests
+        - YallaSaTests
     profile:
       config: Release
     archive:

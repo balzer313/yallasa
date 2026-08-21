@@ -1,6 +1,6 @@
 # App contracts
 
-Normative for everything under `Sources/MoveIt/`. The engine contracts are in
+Normative for everything under `Sources/YallaSa/`. The engine contracts are in
 `CONTRACTS.md`; this file covers the SwiftUI layer only.
 
 ## Architecture
@@ -10,7 +10,7 @@ SwiftUI views  ──reads──▶  ViewData structs  ◀──builds──  Pr
       │                                                       │
       └──────────── actions ─────────▶ Feature view models ────┘
                                               │
-                                       TransitService  (MoveItKit)
+                                       TransitService  (YallaSaKit)
 ```
 
 **Views never touch `TransitGraph`.** A view that reaches into the graph to get a
@@ -31,8 +31,8 @@ convert results through `Presenter`, and publish plain `ViewData` structs.
 |---|---|
 | `Theme`, `LiveStatus` | `DesignSystem/Theme.swift` |
 | `Format` | `DesignSystem/Formatters.swift` |
-| `TransitService`, `TransitServiceState` | `MoveItKit/TransitService.swift` |
-| everything else in `MoveItKit` | see `CONTRACTS.md` |
+| `TransitService`, `TransitServiceState` | `YallaSaKit/TransitService.swift` |
+| everything else in `YallaSaKit` | see `CONTRACTS.md` |
 
 ## 1. View data — `Presentation/ViewData.swift` *(owned by the shell agent)*
 

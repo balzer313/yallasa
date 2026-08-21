@@ -12,18 +12,28 @@
     }
   },
   "recentActivity": [
-    "2026-08-10T15:47:54.591Z — claude \"Claude - Move it\" is running"
+    "2026-08-21T12:19:10.552Z — claude \"Claude - Move it\" is running",
+    "2026-08-14T18:36:52.440Z — claude \"Claude - Move it\" is exited"
   ],
   "sessions": [
+    {
+      "id": "sess_68b935a8d6a12054c49d37c5",
+      "name": "Claude - Move it",
+      "type": "claude",
+      "status": "running",
+      "createdAt": "2026-08-21T09:57:58.134Z",
+      "updatedAt": "2026-08-21T12:19:10.552Z",
+      "lastAttachedAt": "2026-08-21T12:19:10.552Z"
+    },
     {
       "id": "sess_a7d94abf49f5930add36fcbc",
       "name": "Claude - Move it",
       "type": "claude",
-      "status": "running",
+      "status": "exited",
       "createdAt": "2026-08-09T08:58:44.314Z",
-      "updatedAt": "2026-08-10T15:47:54.591Z",
+      "updatedAt": "2026-08-14T18:36:52.440Z",
       "lastAttachedAt": "2026-08-10T15:47:41.226Z"
     }
   ],
-  "generatedAt": "2026-08-10T15:47:54.904Z"
+  "generatedAt": "2026-08-21T12:19:10.854Z"
 }

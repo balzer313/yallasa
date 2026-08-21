@@ -1,10 +1,10 @@
-# Goal — Move It
+# Goal — Yalla Sa
 
 ## The goal
 
 **Ship an iPhone transit app that answers "when is my bus, and how do I get there?" entirely on the device — no server, no backend bill, no API key.**
 
-Everything Moovit does with a datacenter, Move It does with the phone's own CPU:
+Everything Moovit does with a datacenter, Yalla Sa does with the phone's own CPU:
 the app downloads a public GTFS feed once, compiles it into a compact binary
 transit graph on-device, and runs a RAPTOR journey planner locally against that
 graph. The only network traffic is (a) fetching the feed, and (b) optionally

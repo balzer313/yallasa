@@ -5,7 +5,7 @@
 # the cheapest way to close that gap: push, and within a few minutes you get a
 # real compiler's opinion on 24,000 lines that have never seen one.
 #
-# The engine job is the one that matters first. It builds and tests MoveItKit
+# The engine job is the one that matters first. It builds and tests YallaSaKit
 # with no Xcode project, no signing and no simulator, so it is fast and it fails
 # for real reasons.
 
@@ -30,10 +30,10 @@ jobs:
       # Not `-v`. Verbose mode prints the full swift-frontend invocation for
       # every file, which buries the handful of lines that actually say
       # "error:" under megabytes of flags.
-      - name: Build MoveItKit
+      - name: Build YallaSaKit
         run: swift build
 
-      - name: Test MoveItKit
+      - name: Test YallaSaKit
         run: swift test
 
   app:
@@ -69,7 +69,39 @@ jobs:
         # run that lies is worse than no CI run.
         run: |
           xcodebuild build \
-            -project MoveIt.xcodeproj \
-            -scheme MoveIt \
+            -project YallaSa.xcodeproj \
+            -scheme YallaSa \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
+
+      # Xcode rewrites the String Catalog during a build, adding every
+      # `Text("…")` and `String(localized:)` key it finds in the source —
+      # including the interpolated ones, whose keys carry format specifiers
+      # (%@, %lld) that cannot be derived reliably without the type checker.
+      # Uploading the rewritten catalog is how a Windows machine gets hold of
+      # those keys to translate them.
+      - name: Upload the extracted String Catalog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: string-catalog
+          path: Resources/Localizable.xcstrings
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report untranslated strings
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("Resources/Localizable.xcstrings")
+          c = json.loads(p.read_text(encoding="utf-8"))
+          s = c.get("strings", {})
+          missing = [k for k, v in s.items()
+                     if not v.get("localizations", {}).get("he", {}).get("stringUnit", {}).get("value")]
+          print(f"total keys      : {len(s)}")
+          print(f"translated (he) : {len(s) - len(missing)}")
+          print(f"untranslated    : {len(missing)}")
+          for k in sorted(missing):
+              print("  -", k)
+          PY

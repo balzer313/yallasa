@@ -26,7 +26,7 @@ test suite, and does a simulator build of the app.
 cd "D:\Projects\Move it"
 git init
 git add .
-git commit -m "Move It: on-device transit app"
+git commit -m "Yalla Sa: on-device transit app"
 gh repo create move-it --private --source=. --push
 ```
 
@@ -38,7 +38,9 @@ tier, but **macOS minutes bill at 10×**, so budget roughly 200 real minutes.
 A run of this project is a few minutes, so that is plenty for iterating.
 
 What this gets you: a compiling, tested, verified codebase.
-What it does **not** get you: an app on your phone. For that, keep reading.
+What it does **not** get you, on its own: an app on your phone. For that see
+[`SHIPPING.md`](SHIPPING.md) — which does it without a Mac too, and supersedes
+the options below.
 
 ## Option 2 — Rent a Mac in the cloud (~$25–80/month)
 
@@ -98,14 +100,21 @@ would be meaningfully slower.
 
 It is a real option and there is already a tailnet publishing flow in this
 project (`CREATE-WEB.md`) that would serve it to your phone privately. But it is
-a second project, not a repackaging of this one.
+## Recommendation (updated 2026-08-21)
 
-## Recommendation
+**The options above are no longer the shortest path, and the premise of this
+document has partly expired.** Getting the app onto a phone was assumed here to
+require macOS access you control. It does not.
 
-1. **Today, free:** push to GitHub and let CI compile it. That turns "written but
-   unverified" into "known to build and pass its tests", which is the most
-   valuable single step available and costs nothing.
-2. **When you want it on your phone:** rent a cloud Mac for a month, or borrow
-   one for an afternoon.
-3. **Only if you decide against Mac access entirely:** treat the web app as a
-   separate build, and plan for a rewrite of the engine rather than a port.
+`xcodebuild -allowProvisioningUpdates`, given an App Store Connect API key, will
+create the signing certificate and the provisioning profile on a GitHub macOS
+runner. From there the build goes to TestFlight, and TestFlight installs onto
+your iPhone. No Mac is bought, rented, or borrowed at any point.
+
+That path is set up in `.github/workflows/release.yml` and documented in
+[`SHIPPING.md`](SHIPPING.md). Start there.
+
+Renting or buying a Mac is still worth it for one thing this cannot give you:
+the debugger. When the app misbehaves on device, TestFlight gives you a crash
+log; Xcode gives you a breakpoint. Until that becomes the bottleneck, the free
+path is enough.

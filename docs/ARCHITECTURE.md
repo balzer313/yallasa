@@ -35,7 +35,7 @@ is the one deliberate accuracy trade-off in the design.
 ├──────────────────────────────────────────────────────────────┤
 │ TransitService                    (the only door in the wall)  │
 ├──────────────────────────────────────────────────────────────┤
-│ MoveItKit                                                      │
+│ YallaSaKit                                                      │
 │   Feeds   ─ catalog, download, atomic install, manifest        │
 │   GTFS    ─ importer: CSV → patterns → columns → .mvtg         │
 │   Graph   ─ TransitGraph (mmap reader), writer, format         │

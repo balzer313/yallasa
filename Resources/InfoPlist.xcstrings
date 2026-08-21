@@ -1,0 +1,20 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Yalla Sa" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "יאללה סע" } }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Yalla Sa uses your location to show the stops around you and the next departures from them. Your location never leaves your phone." } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "יאללה סע משתמש במיקום שלכם כדי להציג את התחנות סביבכם ואת היציאות הבאות מהן. המיקום שלכם לא יוצא מהטלפון." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
