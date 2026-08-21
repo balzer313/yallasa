@@ -1,0 +1,122 @@
+# Checks the App Store Connect credentials without building anything.
+#
+# An archive that fails on a 401 costs ~50 seconds on a macOS runner and tells
+# you almost nothing: xcodebuild reports "Communication with Apple failed" and
+# then a misleading "No profiles found", which sends people hunting for a
+# provisioning problem they do not have.
+#
+# This runs on Linux in about thirty seconds and answers the three questions
+# that actually distinguish the causes:
+#
+#   1. Is the .p8 secret shaped like a PEM file at all? (newlines survive?)
+#   2. Do the Key ID and Issuer ID authenticate against the real API?
+#   3. Does an app record for com.yallasa.app exist yet?
+#
+# It never prints key material — only structure and status codes.
+
+name: Diagnose App Store Connect credentials
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    name: Check credentials
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the shape of the .p8 secret
+        env:
+          P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          echo "--- structural check (no key material printed) ---"
+          LINES=$(printf '%s' "$P8" | wc -l)
+          CHARS=$(printf '%s' "$P8" | wc -c)
+          echo "total characters : $CHARS"
+          echo "newline count    : $LINES"
+          if printf '%s' "$P8" | head -1 | grep -q -- '-----BEGIN PRIVATE KEY-----$'; then
+            echo "first line       : OK (BEGIN header alone on line 1)"
+          else
+            echo "first line       : WRONG"
+            echo "::error::The BEGIN header is not alone on its own line. The .p8 was probably pasted as a single line, which is not valid PEM. Re-copy the file with its line breaks intact."
+          fi
+          if printf '%s' "$P8" | tail -1 | grep -q -- '-----END PRIVATE KEY-----'; then
+            echo "last line        : OK (END footer present)"
+          else
+            echo "last line        : WRONG — no END footer on the final line"
+          fi
+          if [ "$LINES" -lt 3 ]; then
+            echo "::error::A valid .p8 has at least 4 lines. This secret has $LINES newlines, so it is almost certainly a single-line paste."
+          fi
+
+      - name: Authenticate against the App Store Connect API
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          python3 -m pip install --quiet pyjwt cryptography
+          python3 - <<'PY'
+          import os, time, json, urllib.request, urllib.error, sys
+          import jwt
+
+          key_id    = os.environ["KEY_ID"].strip()
+          issuer_id = os.environ["ISSUER_ID"].strip()
+          p8        = os.environ["P8"]
+
+          print(f"Key ID length    : {len(key_id)}  (expected 10)")
+          print(f"Issuer ID length : {len(issuer_id)}  (expected 36)")
+          print(f"Issuer looks like a UUID: {issuer_id.count('-') == 4}")
+          print()
+
+          try:
+              token = jwt.encode(
+                  {"iss": issuer_id, "iat": int(time.time()),
+                   "exp": int(time.time()) + 600, "aud": "appstoreconnect-v1"},
+                  p8, algorithm="ES256", headers={"kid": key_id, "typ": "JWT"},
+              )
+          except Exception as e:
+              print("::error::Could not sign a JWT with this .p8 — the key itself is malformed.")
+              print(f"reason: {type(e).__name__}: {e}")
+              sys.exit(1)
+          print("JWT signed with the .p8: OK  (the key parses)")
+
+          def call(path):
+              req = urllib.request.Request(
+                  "https://api.appstoreconnect.apple.com" + path,
+                  headers={"Authorization": f"Bearer {token}"})
+              try:
+                  with urllib.request.urlopen(req) as r:
+                      return r.status, json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read().decode()[:600]
+
+          status, body = call("/v1/apps?limit=200")
+          print(f"GET /v1/apps -> HTTP {status}")
+          if status == 401:
+              print("::error::Apple rejected the credentials (401). The .p8, the Key ID, "
+                    "and the Issuer ID must all belong to the SAME key. A revoked key also returns 401.")
+              print(body)
+              sys.exit(1)
+          if status != 200:
+              print("::error::Unexpected response.")
+              print(body)
+              sys.exit(1)
+
+          print("AUTHENTICATION OK\n")
+          apps = body.get("data", [])
+          print(f"apps visible to this key: {len(apps)}")
+          found = False
+          for a in apps:
+              bid = a["attributes"].get("bundleId")
+              name = a["attributes"].get("name")
+              print(f"   - {bid}   ({name})")
+              if bid == "com.yallasa.app":
+                  found = True
+          print()
+          if found:
+              print("com.yallasa.app: app record EXISTS — ready to upload.")
+          else:
+              print("::error::No app record for com.yallasa.app. Create it at "
+                    "App Store Connect -> Apps -> + -> New App before uploading.")
+              sys.exit(1)
+          PY
