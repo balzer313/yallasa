@@ -208,8 +208,9 @@ final class FeedCatalogTests: XCTestCase {
         let suggested = try XCTUnwrap(FeedRegion.suggested(for: telAviv))
         XCTAssertEqual(suggested.id, FeedRegion.telAviv.id)
 
-        let manhattan = try XCTUnwrap(FeedRegion.suggested(for: timesSquare))
-        XCTAssertEqual(manhattan.id, FeedRegion.manhattan.id, "the borough is a better answer than the whole city")
+        // Jerusalem sits inside no other box, so the tightest match is itself.
+        let jerusalemRegion = try XCTUnwrap(FeedRegion.suggested(for: jerusalem))
+        XCTAssertEqual(jerusalemRegion.id, FeedRegion.jerusalem.id)
     }
 
     func testRegionSuggestionGivesUpWhenFarAway() {
