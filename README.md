@@ -104,20 +104,28 @@ the machine this was written on.
 
 Requirements: iOS 17+, Xcode 15+, Swift 5.9.
 
-## Adding a city
+## Feeds
 
-The bundled catalog (`Sources/YallaSaKit/Feeds/FeedCatalog.swift`) holds transit
-feeds that need no API key and no registration. Riders can also paste any GTFS
-URL in Settings.
+**Israel only.** The catalog (`Sources/YallaSaKit/Feeds/FeedCatalog.swift`)
+carries the Ministry of Transport's national archive and three metro clips of
+it. It used to also list eight New York feeds, from when this was a generic
+GTFS reader — no rider of a Hebrew transit app was ever going to install the
+Staten Island bus network.
 
-Two things to know about feeds:
+**A first run installs the whole country automatically**, with no picker. There
+is exactly one right answer for this audience, and a screen whose only job is to
+be dismissed should not exist. Unclipped, too: clipping to a metro box made the
+app quietly wrong the moment a rider left it — an intercity bus to Eilat simply
+did not exist.
 
-- **National feeds are huge.** Israel's national GTFS is ~133 MB zipped and
-  about a gigabyte expanded. The app handles this by letting you clip a feed to
-  a metro-area bounding box at import time, which is what makes a national feed
-  usable on a phone.
+Two things still worth knowing:
+
+- **It is a big first run.** ~133 MB zipped, about a gigabyte expanded. That is
+  survivable now only because large tables inflate through a mapped file rather
+  than the heap; see the fix below.
 - **URLs rot.** Agencies move their endpoints without notice. The catalog is
-  best-effort; the custom-URL path is the real answer.
+  best-effort, and `FeedSource.custom(staticURL:name:)` — any GTFS zip URL
+  pasted in Settings — is the real answer, including for feeds outside Israel.
 
 ## Dependencies
 
@@ -146,13 +154,15 @@ The project was authored on Windows, where the iOS SDK does not exist, so CI on 
 macOS runner is what turned "written" into "known to compile".
 
 **The feed endpoint is live, and so are the buses.** Verified 2026-08-21: the
-MOT archive returns 139,433,456 bytes with a valid  and a one day old, and it is ZIP64 —  was extracted from it by range
+MOT archive returns 139,433,456 bytes with a valid `ETag` and a `Last-Modified`
+one day old, and it is ZIP64 — `routes.txt` was pulled out of it by HTTP range
 request and inflated to exactly its declared 956,158 bytes.
 
 Live positions were checked end to end against the real API: **107 vehicles, 77
-lines, 65 moving, freshest fix 80 seconds old**, and **75 of 75 sampled SIRI
- values matched a GTFS ** in the real 7,605-route feed.
- re-runs that check every Monday.
+lines, 65 moving, freshest fix 80 seconds old** — and **75 of 75 sampled SIRI
+`line_ref` values matched a GTFS `route_id`** in the real 7,605-route feed,
+which is the join the whole live map depends on.
+`.github/workflows/live-israel.yml` re-runs that check every Monday morning.
 
 Still unverified, and worth being clear about:
 
@@ -163,12 +173,17 @@ Still unverified, and worth being clear about:
 - **No performance number here has been measured.** Every figure in `GOAL.md`
   and `docs/ALGORITHM.md` is a design target, labelled as one.
 
-### Solved: large entries no longer inflate whole
- used to allocate an entry's full uncompressed size in one buffer.
-Israel's  is **520 MB** uncompressed and  is 219 MB,
-against a 250 MB budget — a jetsam kill on first run. Entries over 32 MB now
-inflate to a temporary file in 4 MB chunks and are memory-mapped, so resident
-memory stays flat and  sees the contiguous buffer it always did.
+### Fixed: large entries no longer inflate whole
+
+`ZipArchive` used to allocate an entry's full uncompressed size in a single
+buffer. Israel's `stop_times.txt` is **520 MB** uncompressed and `shapes.txt`
+is 219 MB, against a 250 MB budget — asking iOS for that on first run is a
+jetsam kill the app cannot even report, because the process is gone.
+
+Entries over 32 MB now inflate to a temporary file in 4 MB chunks and are
+memory-mapped. The kernel pages them, so resident memory stays flat regardless
+of entry size, and `CSVReader` still receives the contiguous buffer it always
+expected — not one line of parsing changed.
 
 `docs/REVIEW.md` records what the review and the first nine CI rounds found —
 including a critical ZIP bug that would have broken every feed import, a
