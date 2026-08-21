@@ -2278,6 +2278,17 @@
         }
       }
     },
+    "Sets this as the destination": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "קובע את זה כיעד"
+          }
+        }
+      }
+    },
     "Settings": {
       "extractionState": "manual",
       "localizations": {
