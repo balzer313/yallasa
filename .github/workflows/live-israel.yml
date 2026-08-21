@@ -1,0 +1,44 @@
+# Runs the real StrideVehicleSource against the real live API.
+#
+# The unit tests feed it captured JSON, which proves the parsing but not that
+# the endpoint still exists, still answers, or still returns the shape we
+# decode. That is what this project is most exposed to: the live feature depends
+# on a third-party community service that can change or disappear without
+# telling anyone, and every unit test would stay green through all of it.
+#
+# Deliberately NOT part of CI. A network test that goes red when someone else's
+# server is slow teaches people to ignore red builds. It runs on demand, and
+# weekly so the rot surfaces before a rider finds it.
+
+name: Live Israel check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 09:00 UTC Monday — a weekday morning when Israeli buses are definitely
+    # running. Scheduled on a Friday evening this would report an outage every
+    # week because of Shabbat.
+    - cron: "0 9 * * 1"
+
+jobs:
+  live:
+    name: Fetch real vehicles
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Local time in Israel
+        run: |
+          echo "UTC now      : $(date -u '+%Y-%m-%d %H:%M')"
+          echo "Israel local : $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M %A')"
+          echo "(few buses run Friday evening through Saturday evening)"
+
+      - name: Run the live integration tests
+        env:
+          YALLASA_LIVE_TESTS: "1"
+        run: swift test --filter LiveIsraelIntegrationTests
