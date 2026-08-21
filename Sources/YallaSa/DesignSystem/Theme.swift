@@ -91,8 +91,15 @@ public enum Theme {
         public static let caption = Font.caption
         public static let badge = Font.subheadline.weight(.bold)
 
-        public static func countdown(_ size: CGFloat = 22) -> Font {
-            .system(size: size, weight: .semibold, design: .rounded).monospacedDigit()
+        /// The departure number itself.
+        ///
+        /// Bigger and heavier than the rest of the type on purpose. On a
+        /// departures board exactly one thing is being read at a glance — how
+        /// many minutes — and everything else on the row is context for it.
+        /// Rounded because the digits sit next to circular line badges, and
+        /// monospaced so the figures do not jitter as they tick down.
+        public static func countdown(_ size: CGFloat = 27) -> Font {
+            .system(size: size, weight: .bold, design: .rounded).monospacedDigit()
         }
 
         public static let clock = Font.body.monospacedDigit()

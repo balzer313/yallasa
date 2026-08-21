@@ -29,18 +29,39 @@ public struct CountdownLabel: View {
     }
 
     public var body: some View {
+        let parts = Format.countdownParts(seconds: seconds)
+
         VStack(alignment: .trailing, spacing: Theme.Spacing.hairline) {
-            HStack(spacing: Theme.Spacing.tight) {
-                if status.isLive, let symbolName = status.symbolName {
-                    Image(systemName: symbolName)
-                        .font(.caption)
-                        .imageScale(.small)
+            HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.tight) {
+                // A pulse for live times, the symbol otherwise. Both carry the
+                // same meaning; the pulse simply reads from further away, which
+                // is what a departures board is for.
+                if status.isLive {
+                    if reduceMotion, let symbolName = status.symbolName {
+                        Image(systemName: symbolName)
+                            .font(.caption)
+                            .imageScale(.small)
+                    } else {
+                        LivePulse(color: numberColor, diameter: 6)
+                            .alignmentGuide(.firstTextBaseline) { $0.height * 0.85 }
+                    }
                 }
-                Text(Format.countdown(seconds: seconds))
+
+                Text(parts.value)
                     .font(Theme.Typography.countdown())
                     .strikethrough(isCancelled, color: Theme.Palette.cancelled)
                     .contentTransition(.numericText())
                     .animation(reduceMotion ? nil : .default, value: seconds)
+
+                // The unit is deliberately small and secondary: at a glance the
+                // rider reads the digit, and "min" is only there so the digit
+                // means something.
+                if let unit = parts.unit {
+                    Text(unit)
+                        .font(Theme.Typography.caption.weight(.medium))
+                        .foregroundStyle(numberColor.opacity(0.75))
+                        .strikethrough(isCancelled, color: Theme.Palette.cancelled)
+                }
             }
             .foregroundStyle(numberColor)
             .lineLimit(1)

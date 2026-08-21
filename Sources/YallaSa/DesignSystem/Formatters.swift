@@ -27,6 +27,26 @@ public enum Format {
         return String(localized: "\(hours) hr \(remainder) min")
     }
 
+    /// The countdown split into the number and its unit.
+    ///
+    /// Exists so the number can be set large and the unit small beside it — the
+    /// treatment every good departures board uses, because at a glance the rider
+    /// is reading one digit, not a sentence. Keeping the split here rather than
+    /// in the view means the two never disagree about rounding, and "now" and
+    /// "departed" come back with no unit at all rather than a stray "min".
+    public static func countdownParts(seconds: Int32) -> (value: String, unit: String?) {
+        if seconds < 0 { return (String(localized: "departed"), nil) }
+        if seconds < 60 { return (String(localized: "now"), nil) }
+        let minutes = Int((seconds + 59) / 60)
+        if minutes < 60 { return ("\(minutes)", String(localized: "min")) }
+        let hours = minutes / 60
+        let remainder = minutes % 60
+        if remainder == 0 { return ("\(hours)", String(localized: "hr")) }
+        // Past an hour the number alone stops being readable, so this falls back
+        // to the full phrase and lets the view render it as one string.
+        return (String(localized: "\(hours) hr \(remainder) min"), nil)
+    }
+
     /// Accessibility phrasing for the same value. VoiceOver reading "3 min"
     /// as "three em eye en" is the kind of detail that decides whether a blind
     /// rider can use the app at all.
