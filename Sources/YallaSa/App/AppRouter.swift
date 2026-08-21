@@ -3,7 +3,15 @@ import Combine
 import YallaSaKit
 
 public enum AppTab: String, Hashable, CaseIterable {
+    /// `map` is no longer a tab — Home owns the map — but it survives as a
+    /// routing lane. `MapCanvas` still pushes stop and route detail, and those
+    /// pushes need a path to land in; folding them into `nearby` would make a
+    /// back button from a bus tapped on the map return to a departures list the
+    /// rider never opened.
     case nearby, plan, lines, map, settings
+
+    /// Tabs the shell actually renders, in order.
+    public static let visible: [AppTab] = [.nearby, .plan, .lines, .settings]
 }
 
 /// Everything the app can push. Values, not views — so a deep link, a map

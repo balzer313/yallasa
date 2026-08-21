@@ -45,9 +45,10 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: tabSelection) {
-            stack(path: $router.nearbyPath) {
-                NearbyView(service: service, presenter: presenter, location: location)
-            }
+            // Nearby and Map used to be two tabs asking two halves of one
+            // question. HomeView is both: the map is the background and the
+            // departures ride in a sheet over it.
+            stack(path: $router.nearbyPath) { HomeView() }
                 .tabItem { Label(String(localized: "Nearby"), systemImage: "bus.fill") }
                 .tag(AppTab.nearby)
 
@@ -60,10 +61,6 @@ struct RootView: View {
             stack(path: $router.linesPath) { LinesView() }
                 .tabItem { Label(String(localized: "Lines"), systemImage: "tram.fill") }
                 .tag(AppTab.lines)
-
-            stack(path: $router.mapPath) { MapView() }
-                .tabItem { Label(String(localized: "Map"), systemImage: "map.fill") }
-                .tag(AppTab.map)
 
             stack(path: $router.settingsPath) { SettingsView() }
                 .tabItem { Label(String(localized: "Settings"), systemImage: "gearshape.fill") }

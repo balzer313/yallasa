@@ -71,9 +71,13 @@ public enum Theme {
     }
 
     public enum Radius {
-        public static let small: CGFloat = 6
-        public static let medium: CGFloat = 12
-        public static let large: CGFloat = 18
+        public static let small: CGFloat = 8
+        public static let medium: CGFloat = 14
+        public static let large: CGFloat = 20
+        /// The board over the map. Larger than a card because it is the one
+        /// surface that meets the screen edge, and a shallow curve there reads
+        /// as a mistake rather than a choice.
+        public static let sheet: CGFloat = 28
         public static let pill: CGFloat = 999
     }
 

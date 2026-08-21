@@ -66,7 +66,14 @@ final class MapViewModel: ObservableObject {
     }
 }
 
-struct MapView: View {
+/// The live map: stops, and buses actually moving.
+///
+/// No longer a screen of its own. It is the background of `HomeView`, so it
+/// carries no navigation title and no toolbar — anything drawn over a map costs
+/// a strip of the thing the screen exists to show. It keeps its own sheets for a
+/// tapped bus or stop, which is precisely why the departures board above it
+/// could not also be a `.sheet`.
+struct MapCanvas: View {
     @StateObject private var viewModel: MapViewModel
 
     @EnvironmentObject private var service: TransitService
@@ -172,8 +179,6 @@ struct MapView: View {
             }
             .presentationDetents([.height(240), .medium])
         }
-        .navigationTitle(Text("Map"))
-        .navigationBarTitleDisplayMode(.inline)
         .task(id: service.activeFeed?.id) {
             guard service.supportsLiveVehicles else { return }
             service.startLiveVehiclePolling(bounds: { visibleBounds })

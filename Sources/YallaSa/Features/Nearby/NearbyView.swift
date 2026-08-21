@@ -1,12 +1,16 @@
 import SwiftUI
 import YallaSaKit
 
-/// The home screen: what leaves from around here, and when.
+/// The departures board, hosted in the sheet over the map on `HomeView`.
 ///
-/// This is the screen people open twenty times a day for one second, so it is
-/// built to be readable at a glance and to be correct at the second — one
-/// `TimelineView` drives every countdown on screen, rather than a timer per row.
-struct NearbyView: View {
+/// It used to be a whole tab. Splitting "when is my bus" from "where is my bus"
+/// across two tabs made the rider carry the connection between them in their
+/// head, and once live positions arrived the two screens were showing the same
+/// buses in two unrelated ways.
+///
+/// Still built to be read at a glance and correct to the second: one
+/// `TimelineView` drives every countdown on screen rather than a timer per row.
+struct NearbyBoard: View {
     @StateObject private var viewModel: NearbyViewModel
 
     @EnvironmentObject private var service: TransitService
@@ -15,7 +19,17 @@ struct NearbyView: View {
 
     @State private var isShowingAlerts = false
 
-    init(service: TransitService = .shared, presenter: Presenter? = nil, location: LocationProvider) {
+    /// Called when the rider starts scrolling the list, so the host can grow
+    /// the sheet instead of making them drag first and read second.
+    var onScrollStart: (() -> Void)?
+
+    init(
+        service: TransitService = .shared,
+        presenter: Presenter? = nil,
+        location: LocationProvider,
+        onScrollStart: (() -> Void)? = nil
+    ) {
+        self.onScrollStart = onScrollStart
         _viewModel = StateObject(
             wrappedValue: NearbyViewModel(
                 service: service,
@@ -34,7 +48,6 @@ struct NearbyView: View {
 
     var body: some View {
         content
-            .navigationTitle(Text("Nearby"))
             .task { await viewModel.onAppear() }
             .onDisappear { viewModel.onDisappear() }
             .refreshable { await viewModel.refresh() }
@@ -150,6 +163,10 @@ struct NearbyView: View {
                 .padding(Theme.Spacing.regular)
                 .animation(reduceMotion ? nil : .default, value: viewModel.selectedModes)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 8).onChanged { _ in onScrollStart?() }
+            )
         }
     }
 

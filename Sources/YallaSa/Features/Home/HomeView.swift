@@ -1,0 +1,57 @@
+import SwiftUI
+import YallaSaKit
+
+/// The home screen: where you are, what is around you, and what is leaving.
+///
+/// ## The change this represents
+///
+/// Nearby and Map used to be separate tabs. That split forced the rider to
+/// choose between two halves of one question — *when is my bus* and *where is
+/// it* — and to lose their place switching between them. Worse, once live
+/// vehicle positions arrived, the two tabs were showing the same buses in two
+/// unconnected ways: a countdown on one screen, a moving dot on the other, with
+/// nothing tying them together.
+///
+/// They are one screen now. The map is the background, always live, and the
+/// departures sit in a board that can be dragged over it. It is the layout every
+/// transit app people actually like has converged on, for the good reason that
+/// the two facts belong together.
+///
+/// The board defaults to `peek` rather than `full`: the answer is usually in the
+/// first two rows, and seeing where you are while you read them is the point of
+/// putting them on a map at all.
+struct HomeView: View {
+    @EnvironmentObject private var service: TransitService
+    @EnvironmentObject private var router: AppRouter
+    @EnvironmentObject private var location: LocationProvider
+
+    @Environment(\.presenter) private var presenter
+
+    @State private var snap: BottomSheet<AnyView>.Snap = .peek
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            MapCanvas()
+                .ignoresSafeArea()
+
+            BottomSheet(snap: $snap) {
+                AnyView(
+                    NearbyBoard(
+                        service: service,
+                        presenter: presenter,
+                        location: location,
+                        // Reading the board is the moment the rider wants the
+                        // whole list, so the first scroll opens it rather than
+                        // making them drag first and read second.
+                        onScrollStart: { if snap == .peek { snap = .half } }
+                    )
+                )
+            }
+        }
+        .navigationTitle(Text("Nearby"))
+        .navigationBarTitleDisplayMode(.inline)
+        // The map is the content here; a bar over it costs a strip of the thing
+        // the screen exists to show.
+        .toolbar(.hidden, for: .navigationBar)
+    }
+}
