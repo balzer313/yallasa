@@ -36,15 +36,25 @@ struct HomeView: View {
 
             BottomSheet(snap: $snap) {
                 AnyView(
-                    NearbyBoard(
-                        service: service,
-                        presenter: presenter,
-                        location: location,
-                        // Reading the board is the moment the rider wants the
-                        // whole list, so the first scroll opens it rather than
-                        // making them drag first and read second.
-                        onScrollStart: { if snap == .peek { snap = .half } }
-                    )
+                    VStack(spacing: 0) {
+                        // Pinned above the scrolling board, not inside it: it is
+                        // the one control that must be reachable at every sheet
+                        // position, including the collapsed peek.
+                        HomeSearchBar { router.selectedTab = .plan }
+                            .padding(.horizontal, Theme.Spacing.regular)
+                            .padding(.bottom, Theme.Spacing.medium)
+
+                        NearbyBoard(
+                            service: service,
+                            presenter: presenter,
+                            location: location,
+                            // Reading the board is the moment the rider wants
+                            // the whole list, so the first drag opens it rather
+                            // than making them drag once to resize and again to
+                            // read.
+                            onScrollStart: { if snap == .peek { snap = .half } }
+                        )
+                    }
                 )
             }
         }
