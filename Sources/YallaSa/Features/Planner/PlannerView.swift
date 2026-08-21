@@ -59,6 +59,13 @@ struct PlannerView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.regular) {
                 endpointCard
+                if let places {
+                    // Under the endpoints, not above: the rider reads where they
+                    // are going from, then picks where to.
+                    QuickDestinationsRow(places: places) { place in
+                        viewModel.setEndpoint(endpoint(for: place), for: .destination)
+                    }
+                }
                 timeCard
                 resultsSection
             }
@@ -115,6 +122,18 @@ struct PlannerView: View {
         }
         .onDisappear { viewModel.onDisappear() }
         .onChange(of: handoff.pending) { _, _ in consumeHandoff() }
+    }
+
+    /// A saved place as a planner endpoint.
+    ///
+    /// Keeps the stop index when the place was saved as a stop, so the planner
+    /// starts from the platform itself rather than walking to a coordinate that
+    /// happens to sit on top of one.
+    private func endpoint(for place: SavedPlace) -> PlannerEndpoint {
+        if let stop = place.stop, stop >= 0 {
+            return .stop(stop, name: place.name, coordinate: place.coordinate)
+        }
+        return .place(name: place.name, coordinate: place.coordinate)
     }
 
     /// Picks up a "plan from here" request left by another screen.
