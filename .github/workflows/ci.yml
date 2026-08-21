@@ -74,18 +74,35 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
 
-      # Xcode rewrites the String Catalog during a build, adding every
-      # `Text("…")` and `String(localized:)` key it finds in the source —
-      # including the interpolated ones, whose keys carry format specifiers
-      # (%@, %lld) that cannot be derived reliably without the type checker.
-      # Uploading the rewritten catalog is how a Windows machine gets hold of
-      # those keys to translate them.
-      - name: Upload the extracted String Catalog
+      # Ground truth for the localization work.
+      #
+      # 290 of the app's strings are plain literals whose localization key is
+      # just the English text, so they can be translated from a Windows machine
+      # by reading the source. The other 93 are interpolated — `Text("Leave in
+      # \(x)")` — and their key carries a format specifier (%@, %lld, %.1f)
+      # chosen by the type checker. Guessing those keys silently yields a string
+      # that never matches at runtime and falls back to English.
+      #
+      # -exportLocalizations asks Xcode itself for the extracted keys and writes
+      # them to an XLIFF. That is the only honest source for the remaining 93.
+      - name: Export localizations
+        if: always()
+        continue-on-error: true
+        run: |
+          xcodebuild -exportLocalizations \
+            -project YallaSa.xcodeproj \
+            -localizationPath "$RUNNER_TEMP/loc" \
+            -exportLanguage he
+          find "$RUNNER_TEMP/loc" -type f | head -20
+
+      - name: Upload the localization export
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: string-catalog
-          path: Resources/Localizable.xcstrings
+          name: localizations
+          path: |
+            ${{ runner.temp }}/loc/**
+            Resources/Localizable.xcstrings
           if-no-files-found: warn
           retention-days: 14
 
