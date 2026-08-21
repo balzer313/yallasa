@@ -110,11 +110,49 @@ public final class TransitService: ObservableObject {
             } else if let first = feeds.first {
                 try await activate(feedID: first.id)
             } else {
+                // Nothing installed. Rather than opening a picker and asking a
+                // rider to choose between four spellings of "Israel", install
+                // the whole country. There is exactly one right answer for this
+                // app's audience, and a first-run screen whose only real job is
+                // to be dismissed is a screen that should not exist.
+                //
+                // Still `needsFeed` first: the install is long enough that the
+                // UI must be showing progress before it starts, not after.
                 state = .needsFeed
+                await autoInstallDefaultFeed()
             }
         } catch {
             state = .failed(error.localizedDescription)
         }
+    }
+
+    /// Set when the automatic first-run install failed, so the UI can offer a
+    /// retry instead of sitting on a spinner forever.
+    @Published public private(set) var autoInstallError: String?
+
+    /// Installs the national feed on a first run, with no picker.
+    ///
+    /// Failure here is not fatal and deliberately does not throw: the app falls
+    /// back to `needsFeed`, which still has a manual picker behind it. A rider on
+    /// a hotel wifi that dies halfway through 133 MB needs a retry button, not a
+    /// crash and not an empty screen.
+    public func autoInstallDefaultFeed() async {
+        autoInstallError = nil
+        do {
+            try await install(FeedCatalog.defaultSource)
+        } catch is CancellationError {
+            autoInstallError = nil
+            state = .needsFeed
+        } catch {
+            autoInstallError = error.localizedDescription
+            state = .needsFeed
+        }
+    }
+
+    /// True while the first-run install is running, for a UI that has no feed to
+    /// show yet and must not look idle.
+    public var isPerformingFirstRunInstall: Bool {
+        state == .installing && activeFeed == nil
     }
 
     public var timeZone: TimeZone { graph?.timeZone ?? .current }

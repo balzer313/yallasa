@@ -14,16 +14,75 @@ struct FeedGateView: View {
 
     @State private var failure: String?
 
+    /// Set once the rider explicitly asks to choose a feed themselves, which is
+    /// the only way the picker appears now.
+    @State private var isChoosingManually = false
+
     var body: some View {
         NavigationStack {
             Group {
                 if let progress = service.installProgress {
                     FeedInstallProgressView(progress: progress)
-                } else {
+                } else if let message = service.autoInstallError, !isChoosingManually {
+                    // The automatic install failed. Retry is the primary action
+                    // because the overwhelmingly likely cause is a network that
+                    // dropped partway through 133 MB, not a wrong choice of feed.
+                    autoInstallFailed(message)
+                } else if isChoosingManually {
                     picker
+                } else {
+                    // Bootstrap starts the install; this is the moment before its
+                    // first progress callback arrives.
+                    preparing
                 }
             }
             .navigationTitle(Text("Yalla Sa"))
+        }
+    }
+
+    private var preparing: some View {
+        VStack(spacing: Theme.Spacing.large) {
+            Spacer()
+            ProgressView()
+                .controlSize(.large)
+            Text("Getting the timetable for Israel")
+                .font(Theme.Typography.sectionTitle)
+            Text("This happens once. After it finishes, Yalla Sa works offline.")
+                .font(Theme.Typography.rowSubtitle)
+                .foregroundStyle(Theme.Palette.secondaryText)
+                .multilineTextAlignment(.center)
+            Spacer()
+        }
+        .padding(Theme.Spacing.large)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func autoInstallFailed(_ message: String) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.Spacing.large) {
+                explanation
+
+                NoticeCard(
+                    systemImage: "exclamationmark.triangle",
+                    title: String(localized: "The download did not finish"),
+                    message: message,
+                    primaryTitle: String(localized: "Try again"),
+                    primaryAction: {
+                        Task { await service.autoInstallDefaultFeed() }
+                    }
+                )
+
+                Button {
+                    isChoosingManually = true
+                } label: {
+                    Text("Choose a smaller area instead")
+                        .font(Theme.Typography.rowSubtitle)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.Palette.accent)
+            }
+            .padding(Theme.Spacing.regular)
         }
     }
 

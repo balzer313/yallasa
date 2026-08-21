@@ -107,11 +107,22 @@ final class FeedCatalogTests: XCTestCase {
         }
     }
 
-    func testSubwayCarriesRealtime() throws {
-        let subway = try XCTUnwrap(FeedCatalog.source(withID: "nyc-subway"))
-        XCTAssertNotNil(subway.realtimeTripUpdatesURL)
-        XCTAssertNotNil(subway.realtimeAlertsURL)
-        XCTAssertTrue(subway.hasRealtime)
+    func testEveryBundledFeedIsIsraeliAndOffersLivePositions() throws {
+        XCTAssertFalse(FeedCatalog.bundled.isEmpty)
+        for source in FeedCatalog.bundled {
+            XCTAssertEqual(source.countryCode, "IL", "\(source.id) is not an Israeli feed")
+            XCTAssertTrue(source.hasLiveVehicles, "\(source.id) should offer live positions")
+            // MOT SIRI trip updates need a key, so none may claim otherwise.
+            XCTAssertFalse(source.hasRealtime, "\(source.id) claims trip updates it cannot have")
+        }
+    }
+
+    func testDefaultSourceIsTheWholeCountryAndUnclipped() {
+        let fallback = FeedCatalog.defaultSource
+        XCTAssertEqual(fallback.id, "il-mot-national")
+        XCTAssertNil(fallback.defaultBoundingBox, "the default install must not clip")
+        XCTAssertTrue(FeedCatalog.bundled.contains { $0.id == fallback.id })
+        XCTAssertEqual(FeedCatalog.bundled.first?.id, fallback.id, "the default should lead the list")
     }
 
     // MARK: - Ordering
@@ -126,11 +137,6 @@ final class FeedCatalogTests: XCTestCase {
         let ordered = FeedCatalog.nearest(to: telAviv)
 
         XCTAssertEqual(ordered.first?.id, "il-mot-tel-aviv")
-
-        // Every Israeli entry must beat every American one from Tel Aviv.
-        let firstAmerican = try XCTUnwrap(ordered.firstIndex { $0.countryCode == "US" })
-        let lastIsraeli = try XCTUnwrap(ordered.lastIndex { $0.countryCode == "IL" })
-        XCTAssertLessThan(lastIsraeli, firstAmerican)
 
         // And the ordering really is monotonic in distance.
         var previous = -1.0
@@ -151,21 +157,17 @@ final class FeedCatalogTests: XCTestCase {
         XCTAssertLessThan(jerusalemIndex, haifaIndex)
     }
 
-    func testNearestInNewYorkReturnsNewYorkFeeds() throws {
-        let ordered = FeedCatalog.nearest(to: timesSquare)
-        XCTAssertEqual(ordered.first?.countryCode, "US")
-        let topFive = ordered.prefix(5).map { $0.id }
-        XCTAssertTrue(topFive.contains("nyc-bus-manhattan"), "got \(topFive)")
-        XCTAssertTrue(topFive.contains("nyc-subway"), "got \(topFive)")
-    }
-
     func testCoveringOnlyReturnsFeedsWhoseBoundsContainThePoint() {
-        let covering = FeedCatalog.covering(timesSquare)
+        let covering = FeedCatalog.covering(telAviv)
         XCTAssertFalse(covering.isEmpty)
         for source in covering {
-            XCTAssertEqual(source.bounds?.contains(timesSquare), true)
-            XCTAssertEqual(source.countryCode, "US")
+            XCTAssertEqual(source.bounds?.contains(telAviv), true)
         }
+    }
+
+    /// The catalogue is Israel-only now, so a point in Manhattan matches nothing.
+    func testCoveringIsEmptyOutsideIsrael() {
+        XCTAssertTrue(FeedCatalog.covering(timesSquare).isEmpty)
     }
 
     func testEmptyInputIsHandled() {

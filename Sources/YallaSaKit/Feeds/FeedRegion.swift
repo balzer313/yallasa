@@ -85,79 +85,10 @@ public struct FeedRegion: Codable, Hashable, Sendable, Identifiable {
         feedSourceID: "il-mot-national"
     )
 
-    public static let newYorkCity = FeedRegion(
-        id: "us-nyc",
-        name: "New York City",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.47, minLongitude: -74.30, maxLatitude: 40.94, maxLongitude: -73.68),
-        feedSourceID: "nyc-subway"
-    )
-
-    public static let manhattan = FeedRegion(
-        id: "us-nyc-manhattan",
-        name: "Manhattan",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.68, minLongitude: -74.03, maxLatitude: 40.88, maxLongitude: -73.90),
-        feedSourceID: "nyc-bus-manhattan"
-    )
-
-    public static let brooklyn = FeedRegion(
-        id: "us-nyc-brooklyn",
-        name: "Brooklyn",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.55, minLongitude: -74.07, maxLatitude: 40.75, maxLongitude: -73.82),
-        feedSourceID: "nyc-bus-brooklyn"
-    )
-
-    public static let bronx = FeedRegion(
-        id: "us-nyc-bronx",
-        name: "The Bronx",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.77, minLongitude: -73.94, maxLatitude: 40.92, maxLongitude: -73.74),
-        feedSourceID: "nyc-bus-bronx"
-    )
-
-    public static let queens = FeedRegion(
-        id: "us-nyc-queens",
-        name: "Queens",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.53, minLongitude: -73.97, maxLatitude: 40.81, maxLongitude: -73.69),
-        feedSourceID: "nyc-bus-queens"
-    )
-
-    public static let statenIsland = FeedRegion(
-        id: "us-nyc-staten-island",
-        name: "Staten Island",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.48, minLongitude: -74.27, maxLatitude: 40.66, maxLongitude: -74.03),
-        feedSourceID: "nyc-bus-staten-island"
-    )
-
-    /// Penn Station out to Montauk and Greenport — the LIRR's own extent rather
-    /// than an administrative boundary.
-    public static let longIsland = FeedRegion(
-        id: "us-long-island",
-        name: "Long Island",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.57, minLongitude: -74.02, maxLatitude: 41.20, maxLongitude: -71.83),
-        feedSourceID: "nyc-lirr"
-    )
-
-    /// Grand Central north to Wassaic and Poughkeepsie, east to New Haven.
-    public static let lowerHudsonAndConnecticut = FeedRegion(
-        id: "us-lower-hudson",
-        name: "Lower Hudson Valley and southwest Connecticut",
-        countryCode: "US",
-        bounds: GeoBounds(minLatitude: 40.70, minLongitude: -74.06, maxLatitude: 41.85, maxLongitude: -72.85),
-        feedSourceID: "nyc-metro-north"
-    )
-
     /// Every region the app can offer by name. `containing(_:)` sorts by size, so
     /// the declaration order here is only a tie-break.
     public static let all: [FeedRegion] = [
         telAviv, jerusalem, haifa, beerSheva,
-        newYorkCity, manhattan, brooklyn, bronx, queens, statenIsland,
-        longIsland, lowerHudsonAndConnecticut,
     ]
 
     /// Regions whose box contains `point`, tightest first.
