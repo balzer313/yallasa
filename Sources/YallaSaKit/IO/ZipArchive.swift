@@ -128,6 +128,22 @@ public final class ZipArchive {
             try ZipArchive.verify(payload, against: entry)
             return try body(payload)
         case 8:
+            // A national feed's stop_times.txt is half a gigabyte uncompressed.
+            // Inflating that into one heap buffer is a jetsam kill on a phone,
+            // so anything this large is spilled to a mapped temporary file and
+            // the kernel is left to page it. Everything smaller keeps the
+            // simpler in-memory route.
+            if entry.uncompressedSize > ZipStreamingInflate.spillThreshold {
+                return try ZipStreamingInflate.withMappedInflation(
+                    of: payload,
+                    expecting: entry.uncompressedSize,
+                    entryName: entry.name
+                ) { raw in
+                    try ZipArchive.verify(raw, against: entry)
+                    return try body(raw)
+                }
+            }
+
             let inflated = try ZipArchive.inflate(
                 payload,
                 expecting: entry.uncompressedSize,
