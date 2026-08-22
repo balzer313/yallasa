@@ -86,9 +86,20 @@ jobs:
       - name: Test the app target
         run: |
           set -o pipefail
-          DEVICE=$(xcrun simctl list devices available | \
-            awk '/-- iOS/{ios=1; next} /^--/{ios=0} ios && /\(.*\) \(Shutdown\)|\(.*\) \(Booted\)/ { \
-              match($0, /\(([0-9A-F-]{36})\)/, m); if (m[1] != "") { print m[1]; exit } }')
+          # python3 rather than awk: macOS ships BSD awk, whose match() takes no
+          # capture-array argument, so the gawk idiom for this fails outright.
+          DEVICE=$(python3 - <<'PY'
+          import json, subprocess
+          raw = subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"])
+          for runtime, devices in json.loads(raw)["devices"].items():
+              if "iOS" not in runtime:
+                  continue
+              for device in devices:
+                  if device.get("isAvailable"):
+                      print(device["udid"])
+                      raise SystemExit
+          PY
+          )
           if [ -z "$DEVICE" ]; then
             echo "::error::no iOS simulator available on this runner"
             xcrun simctl list devices available
