@@ -74,6 +74,33 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
 
+      # The app-layer tests have existed since the first commit and have never
+      # run: this job built the app and stopped there. TripTracker's alarm
+      # schedule is what makes that no longer acceptable — a rider asleep on a
+      # bus is trusting those alarms completely, and an alarm a minute late is
+      # an alarm at the wrong stop.
+      #
+      # The simulator is chosen at runtime rather than pinned to a device name,
+      # because the runner image renames and renumbers its simulators with every
+      # Xcode bump and a hard-coded "iPhone 15" fails the day that happens.
+      - name: Test the app target
+        run: |
+          set -o pipefail
+          DEVICE=$(xcrun simctl list devices available | \
+            awk '/-- iOS/{ios=1; next} /^--/{ios=0} ios && /\(.*\) \(Shutdown\)|\(.*\) \(Booted\)/ { \
+              match($0, /\(([0-9A-F-]{36})\)/, m); if (m[1] != "") { print m[1]; exit } }')
+          if [ -z "$DEVICE" ]; then
+            echo "::error::no iOS simulator available on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "simulator: $DEVICE"
+          xcodebuild test \
+            -project YallaSa.xcodeproj \
+            -scheme YallaSa \
+            -destination "platform=iOS Simulator,id=$DEVICE" \
+            CODE_SIGNING_ALLOWED=NO
+
       # Ground truth for the localization work.
       #
       # 290 of the app's strings are plain literals whose localization key is
