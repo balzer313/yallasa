@@ -57,7 +57,7 @@ final class RealIsraelFeedDiagnosticTests: XCTestCase {
         let started = Date()
         _ = try GTFSImporter(options: options).compile(archiveAt: archiveURL, to: graphURL)
         print("compiled \(label) in \(Int(Date().timeIntervalSince(started)))s")
-        return try TransitGraph(url: graphURL)
+        return try TransitGraph(memory: GraphMemory.map(contentsOf: graphURL))
     }
 
     // MARK: - What the graph actually contains
@@ -135,7 +135,7 @@ final class RealIsraelFeedDiagnosticTests: XCTestCase {
             let result = try planner.plan(request, realtime: EmptyRealtimeSource.shared)
             print("\(label) [\(instant.date.gtfsString) \(instant.seconds)s] -> \(result.journeys.count) journeys")
             if let first = result.journeys.first {
-                print("    depart \(first.departureSeconds) arrive \(first.arrivalSeconds) legs \(first.legs.count)")
+                print("    depart \(first.departure) arrive \(first.arrival) legs \(first.legs.count)")
             }
             if !result.journeys.isEmpty { anySucceeded = true }
         }

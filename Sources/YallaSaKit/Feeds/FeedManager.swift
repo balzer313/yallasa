@@ -169,7 +169,28 @@ public actor FeedManager {
 
     // MARK: - State
 
-    public var installedFeeds: [InstalledFeed] { manifest.feeds }
+    /// Installed feeds, with each source refreshed against the current catalogue.
+    ///
+    /// The manifest persists a whole `FeedSource`, which was written by whatever
+    /// build performed the install. Anything the app later *learns* about a feed
+    /// — a realtime endpoint, a live-positions service — is therefore invisible
+    /// on every existing installation until the rider deletes and reinstalls,
+    /// and nothing tells them to.
+    ///
+    /// That is not hypothetical: live vehicle positions shipped after the first
+    /// builds, so every feed installed before them reported `vehiclePositions`
+    /// nil and the map stayed empty for good.
+    ///
+    /// The rider's own choices — which URL, which clip box — stay as installed,
+    /// because those describe the graph actually on disk. Only the fields the
+    /// catalogue owns are refreshed.
+    public var installedFeeds: [InstalledFeed] {
+        manifest.feeds.map { feed in
+            var updated = feed
+            updated.source = feed.source.refreshedFromCatalog()
+            return updated
+        }
+    }
 
     public var activeFeedID: String? { manifest.activeFeedID }
 

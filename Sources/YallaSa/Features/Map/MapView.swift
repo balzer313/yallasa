@@ -204,6 +204,21 @@ struct MapCanvas: View {
                         longitudinalMeters: 1500
                     )
                 )
+                // Seed the polling region from the same point.
+                //
+                // `visibleBounds` was only ever assigned by onMapCameraChange,
+                // which fires when a camera movement *ends* — so until the rider
+                // dragged the map it stayed nil, the poll loop skipped every
+                // tick, and not one bus appeared. The map looked broken on the
+                // one screen the feature exists for.
+                if visibleBounds == nil {
+                    visibleBounds = GeoBounds(
+                        minLatitude: here.latitude - 0.02,
+                        minLongitude: here.longitude - 0.02,
+                        maxLatitude: here.latitude + 0.02,
+                        maxLongitude: here.longitude + 0.02
+                    )
+                }
             }
         }
     }

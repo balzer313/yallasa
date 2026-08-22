@@ -119,6 +119,31 @@ public struct FeedSource: Codable, Hashable, Sendable, Identifiable {
         return approximateDownloadMegabytes >= 60 || latitudeSpan > 2.5 || longitudeSpan > 2.5
     }
 
+    /// This source with the catalogue's current view of the same feed folded in.
+    ///
+    /// A manifest is written once, at install, by whatever build was running
+    /// then. Everything the app later learns about a feed would otherwise never
+    /// reach an existing installation — the rider would have to delete and
+    /// reinstall, with nothing telling them to. Live vehicle positions hit
+    /// exactly this: they shipped after the first builds, so every feed already
+    /// installed reported `vehiclePositions` nil and the map stayed empty.
+    ///
+    /// Only catalogue-owned fields are taken. `staticURL`, `bounds` and
+    /// `defaultBoundingBox` are left alone because they describe the graph
+    /// actually compiled on disk, and a custom feed — one not in the catalogue
+    /// at all — is returned untouched.
+    public func refreshedFromCatalog() -> FeedSource {
+        guard let current = FeedCatalog.source(withID: id) else { return self }
+        var merged = self
+        merged.vehiclePositions = current.vehiclePositions
+        merged.realtimeTripUpdatesURL = current.realtimeTripUpdatesURL
+        merged.realtimeAlertsURL = current.realtimeAlertsURL
+        merged.attribution = current.attribution
+        merged.licenseURL = current.licenseURL
+        merged.requestHeaders = current.requestHeaders
+        return merged
+    }
+
     /// A source for a URL the user typed in. The catalogue will always be
     /// incomplete, and a feed we have never heard of should be one paste away
     /// rather than impossible.
