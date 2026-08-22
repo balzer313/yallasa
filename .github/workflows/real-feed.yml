@@ -1,0 +1,33 @@
+# Imports the real Israeli feed and plans a real journey.
+#
+# Exists because the whole test suite runs on fixtures, which is precisely how a
+# router can be provably correct against hand-built graphs and still return
+# nothing on the only feed the app ships with. It downloads 133 MB and compiles
+# a large fraction of a gigabyte, so it is on demand rather than in CI.
+
+name: Real feed diagnostic
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    name: Import Israel and plan a journey
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Local time in Israel
+        run: |
+          echo "UTC now      : $(date -u '+%Y-%m-%d %H:%M %A')"
+          echo "Israel local : $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M %A')"
+
+      - name: Build
+        run: swift build
+
+      - name: Import the real feed and plan
+        env:
+          YALLASA_REAL_FEED_TESTS: "1"
+        run: swift test --filter RealIsraelFeedDiagnosticTests
