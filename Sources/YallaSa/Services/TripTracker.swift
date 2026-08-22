@@ -173,10 +173,19 @@ final class TripTracker: ObservableObject {
         var alarms: [Alarm] = []
         let rides = journey.legs.enumerated().filter { $0.element.kind == .ride }
 
-        for (index, leg) in rides {
-            // Boarding: only worth an alarm when it is not the very first thing,
-            // because the rider is awake and standing at the stop for that one.
-            if index > 0, let boardAt = date(journey.baseDate, leg.departureSeconds, timeZone) {
+        // Counted over *rides*, not over legs. A journey almost always opens
+        // with a walk, so the first ride sits at leg index 1 — keying "is this
+        // the first boarding" on the leg index alarms a boarding the rider is
+        // standing wide awake at the stop for.
+        for (rideOrdinal, entry) in rides.enumerated() {
+            let index = entry.offset
+            let leg = entry.element
+            let isFirstRide = rideOrdinal == 0
+            let isLastRide = rideOrdinal == rides.count - 1
+
+            // Boarding: only once the rider may already be asleep, which is
+            // never true of the first one.
+            if !isFirstRide, let boardAt = date(journey.baseDate, leg.departureSeconds, timeZone) {
                 alarms.append(
                     Alarm(
                         identifier: "\(identifierPrefix)\(journey.id).board.\(index)",
@@ -188,12 +197,11 @@ final class TripTracker: ObservableObject {
             }
 
             guard let alightAt = date(journey.baseDate, leg.arrivalSeconds, timeZone) else { continue }
-            let isLast = index == (rides.last?.offset ?? -1)
             alarms.append(
                 Alarm(
                     identifier: "\(identifierPrefix)\(journey.id).alight.\(index)",
                     fireAt: alightAt.addingTimeInterval(-warning),
-                    title: isLast
+                    title: isLastRide
                         ? String(localized: "Almost there")
                         : String(localized: "Time to get off"),
                     body: String(localized: "Get off at \(leg.toName) in 1 minute.")
