@@ -12,10 +12,20 @@ public struct JourneyCardView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    public init(item: JourneyItem, now: ServiceSeconds, timeZone: TimeZone) {
+    /// True when the rider asked to leave now, which is the only case where a
+    /// countdown means anything.
+    private let isImmediate: Bool
+
+    public init(
+        item: JourneyItem,
+        now: ServiceSeconds,
+        timeZone: TimeZone,
+        isImmediate: Bool = true
+    ) {
         self.item = item
         self.now = now
         self.timeZone = timeZone
+        self.isImmediate = isImmediate
     }
 
     public var body: some View {
@@ -57,24 +67,67 @@ public struct JourneyCardView: View {
         return Theme.Palette.lineColor(badge.backgroundHex)
     }
 
+    /// The headline reads differently depending on whether the trip is now.
+    ///
+    /// A countdown is the right answer for "leave now": the rider is standing up
+    /// and wants to know whether to run. It is a useless answer for a trip
+    /// planned for Tuesday, where "in 3 days" tells them nothing they did not
+    /// already know and hides the two facts they actually want — what time it
+    /// leaves and what time they arrive.
+    ///
+    /// So an immediate trip leads with the countdown, and a planned one leads
+    /// with the clock times and the duration between them.
     private var headline: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: Theme.Spacing.small))
             : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: Theme.Spacing.medium))
 
         return layout {
-            CountdownLabel(seconds: item.departureSeconds - now, status: departureStatus)
+            if isImmediate {
+                CountdownLabel(seconds: item.departureSeconds - now, status: departureStatus)
 
-            VStack(alignment: .leading, spacing: Theme.Spacing.hairline) {
-                Text(String(localized: "arrive \(clock(item.arrivalSeconds))"))
-                    .font(Theme.Typography.rowTitle)
-                    .foregroundStyle(Theme.Palette.primaryText)
-                Text(Format.duration(seconds: item.durationSeconds))
-                    .font(Theme.Typography.rowSubtitle)
-                    .foregroundStyle(Theme.Palette.secondaryText)
+                VStack(alignment: .leading, spacing: Theme.Spacing.hairline) {
+                    Text(String(localized: "arrive \(clock(item.arrivalSeconds))"))
+                        .font(Theme.Typography.rowTitle)
+                        .foregroundStyle(Theme.Palette.primaryText)
+                    Text(Format.duration(seconds: item.durationSeconds))
+                        .font(Theme.Typography.rowSubtitle)
+                        .foregroundStyle(Theme.Palette.secondaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                scheduleHeadline
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    /// Departure → arrival, with the duration underneath.
+    private var scheduleHeadline: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.tight) {
+            HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.small) {
+                Text(clock(item.departureSeconds))
+                    .font(Theme.Typography.countdown(22))
+                    .foregroundStyle(Theme.Palette.primaryText)
+
+                Image(systemName: "arrow.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.Palette.tertiaryText)
+                    .accessibilityHidden(true)
+
+                Text(clock(item.arrivalSeconds))
+                    .font(Theme.Typography.countdown(22))
+                    .foregroundStyle(Theme.Palette.primaryText)
+
+                Spacer(minLength: 0)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+
+            Text(Format.duration(seconds: item.durationSeconds))
+                .font(Theme.Typography.rowSubtitle)
+                .foregroundStyle(Theme.Palette.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var badgeStrip: some View {

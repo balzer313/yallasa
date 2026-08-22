@@ -155,14 +155,14 @@ struct PlannerView: View {
 
     private var endpointCard: some View {
         SectionCard(title: nil) {
-            HStack(alignment: .center, spacing: Theme.Spacing.small) {
-                VStack(spacing: 0) {
-                    endpointRow(.origin)
-                    Divider().padding(.leading, Theme.Spacing.large)
-                    endpointRow(.destination)
-                }
-                swapButton
-            }
+            TripEndpointsBar(
+                origin: viewModel.origin,
+                destination: viewModel.destination,
+                onTapOrigin: { editingField = .origin },
+                onTapDestination: { editingField = .destination },
+                onSwap: { viewModel.swapEndpoints() }
+            )
+            .padding(Theme.Spacing.regular)
         }
     }
 
@@ -355,7 +355,11 @@ struct PlannerView: View {
                                     in: viewModel.timeZone,
                                     frame: item.baseDate
                                 ),
-                                timeZone: viewModel.timeZone
+                                timeZone: viewModel.timeZone,
+                                // "Leave now" gets a countdown; a trip planned
+                                // for Tuesday gets clock times, because "in 3
+                                // days" answers nothing.
+                                isImmediate: viewModel.timeMode == .leaveNow
                             )
                         }
                         .buttonStyle(.plain)

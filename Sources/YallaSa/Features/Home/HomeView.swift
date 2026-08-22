@@ -28,6 +28,8 @@ struct HomeView: View {
     @Environment(\.presenter) private var presenter
 
     @State private var snap: BottomSheet<AnyView>.Snap = .peek
+    /// The planner, over the map rather than beside it in another tab.
+    @State private var isPlanning = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -40,7 +42,7 @@ struct HomeView: View {
                         // Pinned above the scrolling board, not inside it: it is
                         // the one control that must be reachable at every sheet
                         // position, including the collapsed peek.
-                        HomeSearchBar { router.selectedTab = .plan }
+                        HomeSearchBar { isPlanning = true }
                             .padding(.horizontal, Theme.Spacing.regular)
                             .padding(.bottom, Theme.Spacing.medium)
 
@@ -58,7 +60,17 @@ struct HomeView: View {
                 )
             }
         }
-        .navigationTitle(Text("Nearby"))
+        .sheet(isPresented: $isPlanning) {
+            NavigationStack {
+                PlannerView(location: location)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button(String(localized: "Done")) { isPlanning = false }
+                        }
+                    }
+            }
+        }
+        .navigationTitle(Text("Plan"))
         .navigationBarTitleDisplayMode(.inline)
         // The map is the content here; a bar over it costs a strip of the thing
         // the screen exists to show.

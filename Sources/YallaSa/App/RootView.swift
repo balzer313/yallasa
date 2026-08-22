@@ -45,18 +45,14 @@ struct RootView: View {
 
     private var tabs: some View {
         TabView(selection: tabSelection) {
-            // Nearby and Map used to be two tabs asking two halves of one
-            // question. HomeView is both: the map is the background and the
-            // departures ride in a sheet over it.
+            // One screen, three former tabs. Nearby and Map were two halves of
+            // the same question — when is my bus, and where is it — and Plan was
+            // a third place to type the same two place names. Home is the map,
+            // the departures over it, and "Where to?" opening the planner in
+            // place rather than sending the rider somewhere else.
             stack(path: $router.nearbyPath) { HomeView() }
-                .tabItem { Label(String(localized: "Nearby"), systemImage: "bus.fill") }
+                .tabItem { Label(String(localized: "Plan"), systemImage: "bus.fill") }
                 .tag(AppTab.nearby)
-
-            stack(path: $router.planPath) {
-                PlannerView(service: service, presenter: presenter, places: places, location: location)
-            }
-            .tabItem { Label(String(localized: "Plan"), systemImage: "point.topleft.down.to.point.bottomright.curvepath.fill") }
-            .tag(AppTab.plan)
 
             stack(path: $router.linesPath) { LinesView() }
                 .tabItem { Label(String(localized: "Lines"), systemImage: "tram.fill") }
