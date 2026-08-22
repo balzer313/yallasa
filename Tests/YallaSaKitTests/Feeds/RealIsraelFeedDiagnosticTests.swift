@@ -99,6 +99,44 @@ final class RealIsraelFeedDiagnosticTests: XCTestCase {
         )
     }
 
+    /// How much service the compiled graph has on each day of the coming week.
+    ///
+    /// Moovit and the Egged app both show working Shabbat lines while this app
+    /// shows none, so one of two things is true: the graph has no Saturday
+    /// service when the feed does — our bug — or the MOT feed genuinely lacks
+    /// what those apps display, and they are using a source we are not. The
+    /// counts below decide it, and nothing else will.
+    func testReportsHowMuchServiceExistsOnEachDayOfTheWeek() async throws {
+        try XCTSkipUnless(isEnabled, "set YALLASA_REAL_FEED_TESTS=1")
+
+        let graph = try await compile(clippedTo: telAvivBox, label: "weekdays")
+        let today = ServiceDate(date: Date(), in: graph.timeZone)
+
+        print("--- active trips per day (Tel Aviv clip) ---")
+        var saturdayTrips = 0
+        for offset in 0..<7 {
+            let date = today.adding(days: offset)
+            var active = 0
+            if let dayIndex = graph.dayIndex(for: date) {
+                for raw in 0..<graph.tripCount
+                where graph.isServiceActive(graph.tripService(TripIndex(raw)), dayIndex: dayIndex) {
+                    active += 1
+                }
+            }
+            // 5 = Saturday with 0 = Monday.
+            let isSaturday = date.weekdayIndex == 5
+            print("\(date.gtfsString)  weekdayIndex \(date.weekdayIndex)\(isSaturday ? "  <- Saturday" : "")  active trips: \(active)")
+            if isSaturday { saturdayTrips = active }
+        }
+
+        print("")
+        print("Saturday active trips in the Tel Aviv box: \(saturdayTrips)")
+        XCTAssertGreaterThan(
+            saturdayTrips, 0,
+            "the compiled graph has no Saturday service at all in Tel Aviv"
+        )
+    }
+
     // MARK: - The reported symptom
 
     func testPlansAJourneyAcrossTelAviv() async throws {
