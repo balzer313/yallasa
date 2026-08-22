@@ -2124,6 +2124,17 @@
         }
       }
     },
+    "Plan for after Shabbat": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תכנון ליציאת שבת"
+          }
+        }
+      }
+    },
     "Plan trips and check departures with no signal at all.": {
       "extractionState": "manual",
       "localizations": {

@@ -297,14 +297,30 @@ struct PlannerView: View {
         case .results(let items):
             resultsList(items)
         case .empty(let reason):
-            EmptyStateView(
-                systemImage: reason.systemImage,
-                title: reason.title,
-                message: reason.message,
-                actionTitle: reason.actionTitle,
-                action: action(for: reason)
-            )
-            .frame(maxWidth: .infinity)
+            // A blank result on Shabbat is not a failure to find a route, it is
+            // the correct answer — and "No service connects these places at this
+            // time" reads as the planner giving up. Naming Shabbat, and offering
+            // to search from the moment service resumes, is the difference
+            // between an app that looks broken and one that is simply honest.
+            if reason == .noResults, let resumes = shabbatResumption {
+                EmptyStateView(
+                    systemImage: "moon.stars.fill",
+                    title: String(localized: "Shabbat"),
+                    message: String(localized: "Most lines do not run right now. Service returns around \(Format.clock(resumes, in: ShabbatClock.israelTimeZone))."),
+                    actionTitle: String(localized: "Plan for after Shabbat"),
+                    action: { planFromEndOfShabbat(resumes) }
+                )
+                .frame(maxWidth: .infinity)
+            } else {
+                EmptyStateView(
+                    systemImage: reason.systemImage,
+                    title: reason.title,
+                    message: reason.message,
+                    actionTitle: reason.actionTitle,
+                    action: action(for: reason)
+                )
+                .frame(maxWidth: .infinity)
+            }
         case .failed(let message):
             ErrorStateView(message: message) {
                 viewModel.plan()
@@ -374,6 +390,27 @@ struct PlannerView: View {
         // that matters instead of three rows of empty rectangles.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Finding journeys"))
+    }
+
+    /// When service resumes, if the moment being planned for is inside Shabbat.
+    ///
+    /// Keyed on the departure time the rider actually asked about rather than on
+    /// "now": someone planning a Saturday afternoon trip on Thursday should get
+    /// the same explanation, not a puzzling empty list.
+    private var shabbatResumption: Date? {
+        let target = viewModel.timeMode.usesExplicitTime ? viewModel.selectedDate : Date()
+        return ShabbatClock.endOfShabbat(containing: target)
+    }
+
+    /// Re-runs the search from just after havdalah.
+    ///
+    /// Two minutes past, not exactly on it: asking for the instant service
+    /// resumes tends to land before the first vehicle has left its depot, which
+    /// returns another empty list and looks like the button did nothing.
+    private func planFromEndOfShabbat(_ resumes: Date) {
+        viewModel.timeMode = .leaveAt
+        viewModel.selectedDate = resumes.addingTimeInterval(120)
+        viewModel.plan()
     }
 
     private func action(for reason: PlannerEmptyReason) -> (() -> Void)? {
