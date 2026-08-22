@@ -51,6 +51,10 @@ final class NearbyViewModel: ObservableObject {
     private static let radiusLadder: [Double] = [600, 1_200, 2_500]
     private static let departureLimit = 150
     private static let windowSeconds = 3 * 3_600
+    /// Retried window when the usual one comes back empty. Twelve hours covers
+    /// the Shabbat gap and the overnight gap, which are the two times a rider
+    /// most needs to be told when the next bus actually is.
+    private static let sparseWindowSeconds = 12 * 3_600
     /// Rows per stop before the card offers "see all". Four fits on screen next to
     /// three other stops, which is the shape of a useful board.
     static let rowsPerStop = 4
@@ -217,13 +221,31 @@ final class NearbyViewModel: ObservableObject {
             return
         }
 
-        let departures = await service.departures(
+        var departures = await service.departures(
             near: origin,
             radiusMeters: radius,
             limit: NearbyViewModel.departureLimit,
             windowSeconds: NearbyViewModel.windowSeconds,
             modes: nil
         )
+
+        // Widen when the usual window is empty.
+        //
+        // Three hours is right on a weekday and useless on Shabbat: at midday in
+        // Tel Aviv the next departure is over five hours out — scheduled, real,
+        // and sitting in the graph — so the board showed nothing while Moovit
+        // showed the 17:43. The same gap appears overnight in any city.
+        //
+        // Only on empty, so an ordinary board still asks once.
+        if departures.isEmpty {
+            departures = await service.departures(
+                near: origin,
+                radiusMeters: radius,
+                limit: NearbyViewModel.departureLimit,
+                windowSeconds: NearbyViewModel.sparseWindowSeconds,
+                modes: nil
+            )
+        }
 
         guard !Task.isCancelled else { return }
 

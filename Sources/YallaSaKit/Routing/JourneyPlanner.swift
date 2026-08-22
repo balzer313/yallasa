@@ -22,7 +22,47 @@ public final class JourneyPlanner {
         self.graph = graph
     }
 
+    /// How far ahead to look when the ordinary window finds nothing.
+    ///
+    /// Twelve hours, which is the shape of the problem rather than a round
+    /// number: on Shabbat the gap between "now" and the next bus routinely runs
+    /// to five or six hours, and overnight it runs to four or five. An hour —
+    /// the default — is right for a Tuesday and useless for either.
+    public static let sparseServiceWindowSeconds = 12 * 3600
+
+    /// Plans a journey, widening the search once if the usual window is empty.
+    ///
+    /// `PlanOptions.searchWindowSeconds` is one hour, which is the correct
+    /// window on a weekday: it finds the next departure and the three after it
+    /// without scanning a whole day of timetable for results nobody reads.
+    ///
+    /// It is badly wrong when service is sparse. At noon on Shabbat in Tel Aviv
+    /// the next departure is over five hours away — real, scheduled, and in the
+    /// graph — so a one-hour search returned nothing and the app said "no
+    /// journeys found" while Moovit and the Egged app showed the 17:43. The
+    /// timetable was never the problem; the horizon was.
+    ///
+    /// Escalating only on an empty result keeps the common case at one search.
+    /// Widening unconditionally would make every ordinary query scan twelve
+    /// hours to return the same four journeys it already had.
     public func plan(
+        _ request: PlanRequest,
+        realtime: RealtimeSource = EmptyRealtimeSource.shared
+    ) throws -> PlanResult {
+        let first = try planOnce(request, realtime: realtime)
+        guard first.journeys.isEmpty else { return first }
+        // Already looking at least this far: nothing left to widen to.
+        guard request.options.searchWindowSeconds < Self.sparseServiceWindowSeconds else { return first }
+
+        var widened = request
+        widened.options.searchWindowSeconds = Self.sparseServiceWindowSeconds
+        let second = try planOnce(widened, realtime: realtime)
+        // Keep the first result when the wider search adds nothing, so the
+        // caller still sees the statistics from the search it asked for.
+        return second.journeys.isEmpty ? first : second
+    }
+
+    private func planOnce(
         _ request: PlanRequest,
         realtime: RealtimeSource = EmptyRealtimeSource.shared
     ) throws -> PlanResult {

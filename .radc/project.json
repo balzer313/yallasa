@@ -12,7 +12,7 @@
     }
   },
   "recentActivity": [
-    "2026-08-22T09:03:09.272Z — claude \"Claude - Move it\" is running",
+    "2026-08-22T09:17:32.586Z — claude \"Claude - Move it\" is running",
     "2026-08-14T18:36:52.440Z — claude \"Claude - Move it\" is exited"
   ],
   "sessions": [
@@ -22,8 +22,8 @@
       "type": "claude",
       "status": "running",
       "createdAt": "2026-08-21T09:57:58.134Z",
-      "updatedAt": "2026-08-22T09:03:09.272Z",
-      "lastAttachedAt": "2026-08-22T08:50:33.773Z"
+      "updatedAt": "2026-08-22T09:17:32.586Z",
+      "lastAttachedAt": "2026-08-22T09:17:29.493Z"
     },
     {
       "id": "sess_a7d94abf49f5930add36fcbc",
@@ -35,5 +35,5 @@
       "lastAttachedAt": "2026-08-10T15:47:41.226Z"
     }
   ],
-  "generatedAt": "2026-08-22T09:03:09.597Z"
+  "generatedAt": "2026-08-22T09:17:32.896Z"
 }
