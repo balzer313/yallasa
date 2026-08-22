@@ -12,6 +12,7 @@ struct JourneyDetailView: View {
 
     @EnvironmentObject private var service: TransitService
     @EnvironmentObject private var router: AppRouter
+    @EnvironmentObject private var tripTracker: TripTracker
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var expandedLegs: Set<String> = []
@@ -32,6 +33,11 @@ struct JourneyDetailView: View {
                 }
                 .padding(Theme.Spacing.regular)
             }
+        }
+        .safeAreaInset(edge: .bottom) {
+            // safeAreaInset rather than an overlay: the scroll view then knows
+            // the bar is there and stops the last leg card hiding behind it.
+            StartTripBar(item: item, tracker: tripTracker)
         }
         .navigationTitle(Text("Journey"))
         .navigationBarTitleDisplayMode(.inline)

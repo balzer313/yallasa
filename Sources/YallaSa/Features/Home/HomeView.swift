@@ -31,6 +31,8 @@ struct HomeView: View {
     /// The planner, over the map rather than beside it in another tab.
     @State private var isPlanning = false
 
+    @EnvironmentObject private var tripTracker: TripTracker
+
     var body: some View {
         ZStack(alignment: .bottom) {
             MapCanvas()
@@ -42,6 +44,22 @@ struct HomeView: View {
                         // Pinned above the scrolling board, not inside it: it is
                         // the one control that must be reachable at every sheet
                         // position, including the collapsed peek.
+                        // A running trip outranks everything: it is what the
+                        // rider opened the app to check.
+                        if tripTracker.isRunning {
+                            ActiveTripBanner(
+                                tracker: tripTracker,
+                                now: ServiceInstant(date: Date(), in: service.timeZone).seconds,
+                                timeZone: service.timeZone,
+                                onOpen: {
+                                    guard let trip = tripTracker.trip else { return }
+                                    router.show(.journey(trip), in: .nearby)
+                                }
+                            )
+                            .padding(.horizontal, Theme.Spacing.regular)
+                            .padding(.bottom, Theme.Spacing.medium)
+                        }
+
                         HomeSearchBar { isPlanning = true }
                             .padding(.horizontal, Theme.Spacing.regular)
                             .padding(.bottom, Theme.Spacing.medium)
