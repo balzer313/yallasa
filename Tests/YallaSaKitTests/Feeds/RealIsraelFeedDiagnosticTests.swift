@@ -137,6 +137,67 @@ final class RealIsraelFeedDiagnosticTests: XCTestCase {
         )
     }
 
+    /// Where the 3,651 Saturday trips actually are.
+    ///
+    /// The graph has real Saturday service and the planner still returns
+    /// nothing, so the next question is whether that service reaches the stops
+    /// being planned between. A departure board is the cleanest probe: it asks
+    /// one stop what leaves it, with no routing, no transfers and no walking in
+    /// the way.
+    func testDepartureBoardsOnShabbatInCentralTelAviv() async throws {
+        try XCTSkipUnless(isEnabled, "set YALLASA_REAL_FEED_TESTS=1")
+
+        let graph = try await compile(clippedTo: telAvivBox, label: "boards")
+        let board = DepartureBoardService(graph: graph)
+        let instant = ServiceInstant(date: Date(), in: graph.timeZone)
+
+        print("--- now ---")
+        print("service date : \(instant.date.gtfsString)  weekdayIndex \(instant.date.weekdayIndex)")
+        print("seconds      : \(instant.seconds)")
+        print("any service  : \(graph.hasAnyService(on: instant.date))")
+
+        // Sample widely rather than trusting one corner of the city: 300 stops
+        // spread across the clip, so a quiet neighbourhood cannot masquerade as
+        // a broken engine.
+        let sampleCount = min(300, graph.stopCount)
+        let stride = max(1, graph.stopCount / sampleCount)
+
+        var stopsWithDepartures = 0
+        var totalDepartures = 0
+        var examples: [String] = []
+
+        for raw in Swift.stride(from: 0, to: graph.stopCount, by: stride) {
+            let stop = StopIndex(raw)
+            let departures = board.departures(
+                from: [stop],
+                after: instant,
+                withinSeconds: 6 * 3600,
+                limit: 5,
+                limitPerPattern: 2,
+                modes: nil,
+                realtime: EmptyRealtimeSource.shared
+            )
+            guard !departures.isEmpty else { continue }
+            stopsWithDepartures += 1
+            totalDepartures += departures.count
+            if examples.count < 8, let first = departures.first {
+                let route = graph.routeShortName(first.route)
+                examples.append("\(graph.stopName(stop)) — line \(route) at \(first.scheduledDeparture)s")
+            }
+        }
+
+        print("--- boards on Shabbat ---")
+        print("stops sampled          : \(sampleCount)")
+        print("stops with departures  : \(stopsWithDepartures)")
+        print("departures found       : \(totalDepartures)")
+        for example in examples { print("   \(example)") }
+
+        XCTAssertGreaterThan(
+            stopsWithDepartures, 0,
+            "3,651 Saturday trips exist but no sampled stop has a single departure — the board or the router is dropping them"
+        )
+    }
+
     // MARK: - The reported symptom
 
     func testPlansAJourneyAcrossTelAviv() async throws {
