@@ -320,6 +320,17 @@
         }
       }
     },
+    "Alarms follow the timetable, so a late bus may wake you a little early.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות מבוססות על לוח הזמנים, ולכן אוטובוס שמאחר עלול להעיר אתכם קצת מוקדם."
+          }
+        }
+      }
+    },
     "All": {
       "extractionState": "manual",
       "localizations": {
@@ -386,6 +397,17 @@
         }
       }
     },
+    "Almost there": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כמעט הגעתם"
+          }
+        }
+      }
+    },
     "Any public GTFS zip URL works. Most agencies publish one on their open-data page.": {
       "extractionState": "manual",
       "localizations": {
@@ -415,6 +437,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "הגיע"
+          }
+        }
+      }
+    },
+    "Board %@ at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עלייה על %@ בתחנת %@"
+          }
+        }
+      }
+    },
+    "Board %@ at %@ in 1 minute.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עלייה על %@ בתחנת %@ בעוד דקה."
           }
         }
       }
@@ -859,6 +903,28 @@
         }
       }
     },
+    "End": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סיום"
+          }
+        }
+      }
+    },
+    "End trip": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סיום הנסיעה"
+          }
+        }
+      }
+    },
     "Everything runs here": {
       "extractionState": "manual",
       "localizations": {
@@ -1064,6 +1130,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "לרדת ב-%@"
+          }
+        }
+      }
+    },
+    "Get off at %@ in 1 minute.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ירידה בתחנת %@ בעוד דקה."
           }
         }
       }
@@ -1937,6 +2014,17 @@
         }
       }
     },
+    "Notifications are off, so nothing can wake you. Turn them on in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ההתראות כבויות, ולכן שום דבר לא יעיר אתכם. אפשר להפעיל אותן בהגדרות."
+          }
+        }
+      }
+    },
     "On the way": {
       "extractionState": "manual",
       "localizations": {
@@ -2542,6 +2630,17 @@
         }
       }
     },
+    "Sleep on the bus. We will wake you one minute before you need to get off, and one minute before each connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אפשר לישון באוטובוס. נעיר אתכם דקה לפני שצריך לרדת, ודקה לפני כל החלפה."
+          }
+        }
+      }
+    },
     "Something went wrong": {
       "extractionState": "manual",
       "localizations": {
@@ -2549,6 +2648,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "משהו השתבש"
+          }
+        }
+      }
+    },
+    "Start trip": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "התחלת הנסיעה"
           }
         }
       }
@@ -2923,6 +3033,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "ללוח הזמנים הזה אין מקור זמן אמת ציבורי, ולכן כל הזמנים המוצגים הם מתוכננים."
+          }
+        }
+      }
+    },
+    "Time to get off": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הגיע הזמן לרדת"
           }
         }
       }
@@ -3367,6 +3488,17 @@
         }
       }
     },
+    "Wake me before each stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "העירו אותי לפני כל ירידה"
+          }
+        }
+      }
+    },
     "Walk the whole way": {
       "extractionState": "manual",
       "localizations": {
@@ -3418,6 +3550,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "מהירות הליכה"
+          }
+        }
+      }
+    },
+    "What is שנ״צ?": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מה זה שנ״צ?"
           }
         }
       }
@@ -3532,6 +3675,17 @@
         }
       }
     },
+    "You are almost there": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כמעט הגעתם"
+          }
+        }
+      }
+    },
     "You are already there": {
       "extractionState": "manual",
       "localizations": {
@@ -3550,6 +3704,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "המיקום שלכם והנסיעות שלכם לא נשלחים לשום מקום."
+          }
+        }
+      }
+    },
+    "Your next bus is coming": {
+      "extractionState": "manual",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "האוטובוס הבא שלכם מגיע"
           }
         }
       }
