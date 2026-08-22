@@ -165,7 +165,7 @@ final class TripTracker: ObservableObject {
     /// Static and pure so the schedule can be tested without a notification
     /// centre, which is the only way to be sure the alarm lands a minute early
     /// rather than a minute late.
-    static func alarms(
+    nonisolated static func alarms(
         for journey: JourneyItem,
         in timeZone: TimeZone,
         warning: TimeInterval = warningSeconds
@@ -204,7 +204,7 @@ final class TripTracker: ObservableObject {
         return alarms.sorted { $0.fireAt < $1.fireAt }
     }
 
-    private static func date(
+    nonisolated private static func date(
         _ base: ServiceDate,
         _ seconds: ServiceSeconds,
         _ timeZone: TimeZone
